@@ -1,18 +1,13 @@
 package com.example.psdmclientapp.network
 
-import com.example.psdmclientapp.model.Solution
+import com.example.psdmclientapp.model.SolutionRequest
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface SolutionApiService {
 
-    // POST nova ideja
-    @POST("solutions")
-    suspend fun submitIdea(@Body solution: Solution): Solution
+    @POST("solution/session/{sessionId}")
+    suspend fun submitSolution(@Path("sessionId") sessionId: Long, @Body solutionRequest: SolutionRequest)
 
-    // GET sve ideje za neki problem
-    @GET("solution/problem/{problemId}")
-    suspend fun getSolutionsForProblem(@Path("problemId") problemId: Long): List<Solution>
 }

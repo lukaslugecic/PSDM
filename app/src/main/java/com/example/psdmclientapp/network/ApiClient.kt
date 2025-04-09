@@ -4,7 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    private const val BASE_URL = "http://10.0.2.2:8081/api/"
+    private const val BASE_URL = "http://192.168.120.220:8081/api/"
 
     val retrofit: Retrofit = Retrofit.Builder()
         .baseUrl(BASE_URL)
@@ -13,5 +13,7 @@ object ApiClient {
 
     val problemApi: ProblemApiService = retrofit.create(ProblemApiService::class.java)
     val userApi: UserApiService = retrofit.create(UserApiService::class.java)
+    val sessionApi: SessionApiService = retrofit.create(SessionApiService::class.java)
+    val solutionApi: SolutionApiService = retrofit.create(SolutionApiService::class.java)
 }
 

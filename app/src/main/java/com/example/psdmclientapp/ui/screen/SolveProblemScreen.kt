@@ -74,7 +74,8 @@ fun SolveProblemScreen(navController: NavHostController, viewModel: SolveProblem
                     coroutineScope.launch {
                         viewModel.submit { session ->
                             // Možeš prebaciti korisnika na ekran za pozivanje drugih
-                            navController.navigate("inviteUsers/${session.id}")
+                           // navController.navigate("inviteUsers/${session.id}")
+                            navController.navigate("inviteUsers/1")
                         }
                     }
                 },

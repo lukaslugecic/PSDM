@@ -1,7 +1,11 @@
 package com.example.psdmclientapp.model
 
+import java.time.LocalDateTime
+
 data class SessionRequest(
     val problemId: Long,
-    val solvingMethod: String,
-    val decisionMethod: String
+    val problemSolvingMethodId: Long,
+    val decisionMakingMethodId: Long,
+    val start: String,
+    val end: String
 )

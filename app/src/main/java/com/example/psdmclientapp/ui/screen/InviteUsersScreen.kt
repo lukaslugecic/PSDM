@@ -69,7 +69,8 @@ fun InviteUsersScreen(
                     coroutineScope.launch {
                         viewModel.sendInvites(sessionId)
                         if (viewModel.errorMessage == null) {
-                            navController.navigate("sessionLobby/$sessionId")
+                           // navController.navigate("sessionLobby/$sessionId")
+                            navController.navigate("sessionLobby/1")
                         }
                     }
                 },

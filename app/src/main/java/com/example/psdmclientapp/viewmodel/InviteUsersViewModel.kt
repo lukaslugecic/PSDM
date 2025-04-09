@@ -59,8 +59,8 @@ class InviteUsersViewModel @Inject constructor() : ViewModel() {
             isLoading = true
             errorMessage = null
             try {
-                val request = InviteUserRequest(sessionId, selectedUserIds.toList())
-                userApi.inviteUsers(request) // pretend this is implemented
+               // val request = InviteUserRequest(sessionId, selectedUserIds.toList())
+                // userApi.inviteUsers(request) // pretend this is implemented
             } catch (e: Exception) {
                 errorMessage = "Neuspjelo slanje pozivnica"
             } finally {
