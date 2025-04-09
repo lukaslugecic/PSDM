@@ -10,8 +10,8 @@ public class StepMapper {
 
         StepDTO dto = new StepDTO();
         dto.setId(step.getId());
-        dto.setTitle(step.getStepTitle());
-        dto.setDescription(step.getStepDescription());
+        dto.setTitle(step.getTitle());
+        dto.setDescription(step.getDescription());
         return dto;
     }
 
@@ -20,8 +20,8 @@ public class StepMapper {
 
         Step entity = new Step();
         entity.setId(dto.getId());
-        entity.setStepTitle(dto.getTitle());
-        entity.setStepDescription(dto.getDescription());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
         return entity;
     }
 }

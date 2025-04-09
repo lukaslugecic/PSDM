@@ -10,8 +10,8 @@ public class DecisionMakingMethodMapper {
 
         DecisionMakingMethodDTO dto = new DecisionMakingMethodDTO();
         dto.setId(method.getId());
-        dto.setTitle(method.getDecisionMakingMethodTitle());
-        dto.setDescription(method.getDecisionMakingMethodDescription());
+        dto.setTitle(method.getTitle());
+        dto.setDescription(method.getDescription());
         return dto;
     }
 
@@ -20,8 +20,8 @@ public class DecisionMakingMethodMapper {
 
         DecisionMakingMethod entity = new DecisionMakingMethod();
         entity.setId(dto.getId());
-        entity.setDecisionMakingMethodDescription(dto.getTitle());
-        entity.setDecisionMakingMethodDescription(dto.getDescription());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
         return entity;
     }
 }

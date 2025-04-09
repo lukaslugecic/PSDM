@@ -14,10 +14,15 @@ import java.util.List;
 @Table(name = "decision_making_method")
 public class DecisionMakingMethod {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_decision_making_method")
     private Long id;
 
-    private String decisionMakingMethodTitle;
-    private String decisionMakingMethodDescription;
+    @Column(name = "decision_making_method_title", nullable = false)
+    private String title;
+
+    @Column(name = "decision_making_method_description", nullable = false)
+    private String description;
 
     @OneToMany(mappedBy = "decisionMakingMethod")
     private List<Session> sessions;

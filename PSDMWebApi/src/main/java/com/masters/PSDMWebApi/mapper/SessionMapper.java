@@ -15,8 +15,8 @@ public class SessionMapper {
         dto.setProblemId(session.getProblem().getId());
         dto.setProblemSolvingMethodId(session.getProblemSolvingMethod().getId());
         dto.setDecisionMakingMethodId(session.getDecisionMakingMethod().getId());
-        dto.setStart(session.getSessionStart());
-        dto.setEnd(session.getSessionEnd());
+        dto.setStart(session.getStart());
+        dto.setEnd(session.getEnd());
         return dto;
     }
 
@@ -28,8 +28,8 @@ public class SessionMapper {
         entity.setId(dto.getProblemId());
         entity.setProblemSolvingMethod(new ProblemSolvingMethod(dto.getProblemSolvingMethodId()));
         entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
-        entity.setSessionStart(dto.getStart());
-        entity.setSessionEnd(dto.getEnd());
+        entity.setStart(dto.getStart());
+        entity.setEnd(dto.getEnd());
         return entity;
     }
 }

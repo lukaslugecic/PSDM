@@ -27,13 +27,5 @@ public class SessionUsers {
     // Constructors
     public SessionUsers() {
     }
-
-    public SessionUsers(Session session, User user) {
-        this.session = session;
-        this.user = user;
-        this.id = new SessionUsersId(session.getId(), user.getId());
-    }
-
-    // Getters and Setters
 }
 

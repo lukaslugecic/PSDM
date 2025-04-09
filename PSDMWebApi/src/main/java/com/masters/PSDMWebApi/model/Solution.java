@@ -15,12 +15,20 @@ import java.util.*;
 @Table(name = "solution")
 public class Solution {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_solution")
     private Long id;
 
-    private String solutionTitle;
-    private String solutionDescription;
+    @Column(name = "solution_title", nullable = false)
+    private String title;
 
+    @Column(name = "solution_description", nullable = false)
+    private String description;
+
+    @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
+
+    @Column(name = "chosen")
     private Boolean chosen;
 
     @ManyToOne

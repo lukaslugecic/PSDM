@@ -15,16 +15,25 @@ import java.util.*;
 @Table(name = "problem")
 public class Problem {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_problem")
     private Long id;
 
-    private String problemTitle;
+    @Column(name = "problem_title", nullable = false)
+    private String title;
+
+    @Column(name = "problem_description", nullable = false)
+    private String description;
 
     @ManyToOne
     @JoinColumn(name = "moderator_id")
     private User moderator;
 
-    private LocalDateTime problemStart;
-    private LocalDateTime problemEnd;
+    @Column(name = "problem_start", nullable = false)
+    private LocalDateTime start;
+
+    @Column(name = "problem_end")
+    private LocalDateTime end;
 
     @OneToMany(mappedBy = "problem")
     private List<Solution> solutions;

@@ -24,7 +24,9 @@ public class Vote {
     @JoinColumn(name = "solution_id")
     private Solution solution;
 
+    @Column(name = "value", nullable = false)
     private Double value;
 
+    @Column(name = "voting_time", nullable = false)
     private LocalDateTime votingTime;
 }

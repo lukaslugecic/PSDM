@@ -11,8 +11,8 @@ public class ProblemSolvingMethodMapper {
 
         ProblemSolvingMethodDTO dto = new ProblemSolvingMethodDTO();
         dto.setId(method.getId());
-        dto.setTitle(method.getProblemSolvingMethodTitle());
-        dto.setDescription(method.getProblemSolvingMethodDescription());
+        dto.setTitle(method.getTitle());
+        dto.setDescription(method.getDescription());
         return dto;
     }
 
@@ -21,8 +21,8 @@ public class ProblemSolvingMethodMapper {
 
         ProblemSolvingMethod entity = new ProblemSolvingMethod();
         entity.setId(dto.getId());
-        entity.setProblemSolvingMethodTitle(dto.getTitle());
-        entity.setProblemSolvingMethodDescription(dto.getDescription());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
         return entity;
     }
 }

@@ -15,10 +15,15 @@ import java.util.*;
 @Table(name = "session")
 public class Session {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_session")
     private Long id;
 
-    private LocalDateTime sessionStart;
-    private LocalDateTime sessionEnd;
+    @Column(name = "session_start", nullable = false)
+    private LocalDateTime start;
+
+    @Column(name = "session_end")
+    private LocalDateTime end;
 
     @ManyToOne
     @JoinColumn(name = "problem_id")

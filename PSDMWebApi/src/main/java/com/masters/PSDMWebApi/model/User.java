@@ -15,12 +15,20 @@ import java.util.*;
 @Table(name = "users")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_user")
     private Long id;
 
+    @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "surname", nullable = false)
     private String surname;
+
+    @Column(name = "email", nullable = false)
     private String email;
 
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
     @ManyToOne

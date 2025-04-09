@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class AttributeDTO {
     private Long id;
     private Long solutionId;
-    private String attributeTitle;
+    private String title;
 }

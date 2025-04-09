@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public class ProblemDTO {
     private Long id;
     private String title;
+    private String description;
     private Long moderatorId;
     private LocalDateTime start;
     private LocalDateTime end;

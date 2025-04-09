@@ -13,8 +13,8 @@ public class SolutionMapper {
 
         SolutionDTO dto = new SolutionDTO();
         dto.setId(solution.getId());
-        dto.setTitle(solution.getSolutionTitle());
-        dto.setDescription(solution.getSolutionDescription());
+        dto.setTitle(solution.getTitle());
+        dto.setDescription(solution.getDescription());
         dto.setUserId(solution.getUser().getId());
         dto.setProblemId(solution.getProblem().getId());
         dto.setSessionId(solution.getSession().getId());
@@ -28,8 +28,8 @@ public class SolutionMapper {
 
         Solution entity = new Solution();
         entity.setId(dto.getId());
-        entity.setSolutionTitle(dto.getTitle());
-        entity.setSolutionDescription(dto.getDescription());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
         entity.setUser(new User(dto.getUserId()));
         entity.setProblem(new Problem(dto.getProblemId()));
         entity.setSession(new Session(dto.getSessionId()));

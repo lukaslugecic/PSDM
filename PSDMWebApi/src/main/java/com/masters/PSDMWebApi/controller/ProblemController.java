@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/problems")
+@RequestMapping("/api/problem")
 @RequiredArgsConstructor
 public class ProblemController {
 

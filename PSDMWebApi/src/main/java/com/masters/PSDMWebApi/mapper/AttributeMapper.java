@@ -13,7 +13,7 @@ public class AttributeMapper {
         AttributeDTO dto = new AttributeDTO();
         dto.setId(attribute.getId());
         dto.setSolutionId(attribute.getSolution().getId());
-        dto.setAttributeTitle(attribute.getAttributeTitle());
+        dto.setTitle(attribute.getTitle());
         return dto;
     }
 
@@ -23,7 +23,7 @@ public class AttributeMapper {
         Attribute entity = new Attribute();
         entity.setId(dto.getId());
         entity.setSolution(new Solution(dto.getSolutionId()));
-        entity.setAttributeTitle(dto.getAttributeTitle());
+        entity.setTitle(dto.getTitle());
         return entity;
     }
 }

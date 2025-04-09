@@ -11,10 +11,11 @@ public class ProblemMapper {
 
         ProblemDTO dto = new ProblemDTO();
         dto.setId(problem.getId());
-        dto.setTitle(problem.getProblemTitle());
+        dto.setTitle(problem.getTitle());
+        dto.setDescription(problem.getDescription());
         dto.setModeratorId(problem.getModerator().getId());
-        dto.setStart(problem.getProblemStart());
-        dto.setEnd(problem.getProblemEnd());
+        dto.setStart(problem.getStart());
+        dto.setEnd(problem.getEnd());
         return dto;
     }
 
@@ -23,10 +24,11 @@ public class ProblemMapper {
 
         Problem entity = new Problem();
         entity.setId(dto.getId());
-        entity.setProblemTitle(dto.getTitle());
+        entity.setTitle(dto.getTitle());
+        entity.setDescription(dto.getDescription());
         entity.setModerator(new User(dto.getModeratorId()));
-        entity.setProblemStart(dto.getStart());
-        entity.setProblemEnd(dto.getEnd());
+        entity.setStart(dto.getStart());
+        entity.setEnd(dto.getEnd());
         return entity;
     }
 }

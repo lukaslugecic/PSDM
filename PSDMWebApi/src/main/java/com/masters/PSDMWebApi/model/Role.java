@@ -14,9 +14,12 @@ import java.util.*;
 @Table(name = "role")
 public class Role {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_role")
     private Long id;
 
-    private String roleTitle;
+    @Column(name = "role_title", nullable = false)
+    private String title;
 
     @OneToMany(mappedBy = "role")
     private List<User> users;
