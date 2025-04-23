@@ -77,7 +77,7 @@ public class SessionServiceImpl implements SessionService {
                 ));
 
         log.info("Calculated scores for average winner: {}", scores);
-        return getUniqueMaxEntry(scores); // TODO nije potrebno jer ni u jednom slucaju vise njih ne moze imati iznad thresholda
+        return getUniqueMaxEntry(scores); // TODO nije potrebno jer ni u jednom slucaju vise njih ne moze imati iznad thresholdas
     }
 
 
@@ -98,7 +98,7 @@ public class SessionServiceImpl implements SessionService {
                 .mapToLong(Long::longValue)
                 .sum();
 
-        long majorityThreshold = 1;
+        long majorityThreshold = totalVotes / 2 + 1;
 
         Map<Long, Long> scoresOverThreshold = scores.entrySet().stream()
                 .filter(entry -> entry.getValue() >= majorityThreshold)
