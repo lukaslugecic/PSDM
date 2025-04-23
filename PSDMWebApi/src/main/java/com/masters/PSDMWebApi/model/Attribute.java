@@ -17,6 +17,9 @@ public class Attribute {
     @Column(name = "attribute_title", nullable = false)
     private String title;
 
+    @Column(name = "attribute_value", nullable = false)
+    private String value;
+
     @ManyToOne
     @JoinColumn(name = "solution_id")
     private Solution solution;

@@ -14,5 +14,7 @@ public interface SessionService {
     Session updateSession(Long id, Session session);
 
     void deleteSession(Long id);
+
+    Long getBestSolution(Long id);
 }
 

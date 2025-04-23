@@ -1,21 +1,26 @@
 package com.masters.PSDMWebApi.service.impl;
 
 import com.masters.PSDMWebApi.model.Session;
+import com.masters.PSDMWebApi.model.Solution;
+import com.masters.PSDMWebApi.model.Vote;
 import com.masters.PSDMWebApi.repository.SessionRepository;
+import com.masters.PSDMWebApi.service.AttributeService;
 import com.masters.PSDMWebApi.service.SessionService;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
+@Slf4j
 public class SessionServiceImpl implements SessionService {
 
     private final SessionRepository sessionRepository;
 
-    public SessionServiceImpl(SessionRepository sessionRepository) {
-        this.sessionRepository = sessionRepository;
-    }
+    private final AttributeService attributeService;
 
     @Override
     public List<Session> getAllSessions() {
@@ -42,4 +47,137 @@ public class SessionServiceImpl implements SessionService {
     public void deleteSession(Long id) {
         sessionRepository.deleteById(id);
     }
+
+    @Override
+    public Long getBestSolution(Long id) {
+        Optional<Session> sessionOptional = sessionRepository.findById(id);
+        if (sessionOptional.isEmpty()) {
+            return null;
+        }
+        Session session = sessionOptional.get();
+        return switch (session.getDecisionMakingMethod().getTitle()) {
+            case "Average winner" -> getAverageWinnerFinalSolution(session).orElse(null);
+            case "Weighted average winner" -> getWeightedAverageWinnerFinalSolution(session).orElse(null);
+            case "Borda ranking" -> getBordaRankingFinalSolution(session).orElse(null);
+            case "Majority rule" -> getMajorityRuleFinalSolution(session).orElse(null);
+            default -> 5L;
+        };
+    }
+
+
+    private Optional<Long> getAverageWinnerFinalSolution(Session session) {
+        var scores = session.getSolutions().stream()
+                .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
+                .collect(Collectors.toMap(
+                        Solution::getId,
+                        s -> s.getVotes().stream()
+                                .mapToDouble(Vote::getValue)
+                                .average()
+                                .orElse(0.0)
+                ));
+
+        log.info("Calculated scores for average winner: {}", scores);
+        return getUniqueMaxEntry(scores); // TODO nije potrebno jer ni u jednom slucaju vise njih ne moze imati iznad thresholda
+    }
+
+
+    private Optional<Long> getMajorityRuleFinalSolution(Session session) {
+        List<Solution> solutions = session.getSolutions();
+        // TODO check if voter voted for only one solution
+
+        Map<Long, Long> scores = solutions.stream()
+                .filter(s -> s.getVotes() != null && !s.getVotes().isEmpty())
+                .collect(Collectors.toMap(
+                        Solution::getId,
+                        s -> s.getVotes().stream()
+                                .filter(v -> v.getValue() == 1)
+                                .count()
+                ));
+
+        long totalVotes = scores.values().stream()
+                .mapToLong(Long::longValue)
+                .sum();
+
+        long majorityThreshold = 1;
+
+        Map<Long, Long> scoresOverThreshold = scores.entrySet().stream()
+                .filter(entry -> entry.getValue() >= majorityThreshold)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        log.info("Calculated scores for majority threshold: {}", scoresOverThreshold);
+        return getUniqueMaxEntry(scoresOverThreshold);
+    }
+
+
+    private Optional<Long> getBordaRankingFinalSolution(Session session) {
+        List<Solution> solutions = session.getSolutions();
+        int totalSolutions = solutions.size();
+
+        Map<Long, Integer> scores = solutions.stream()
+                .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
+                .collect(Collectors.toMap(
+                        Solution::getId,
+                        s -> s.getVotes().stream()
+                                .mapToInt(v -> {
+                                    int rank = (int) Math.round(v.getValue());
+                                    rank = Math.max(1, Math.min(rank, totalSolutions));
+                                    return totalSolutions - rank + 1;
+                                })
+                                .sum()
+                ));
+
+        log.info("Calculated scores for borda ranking: {}", scores);
+        return getUniqueMaxEntry(scores);
+    }
+
+    private Optional<Long> getWeightedAverageWinnerFinalSolution(Session session) {
+
+        Double sumOfWeights = attributeService.getAllWeightsBySessionId(session.getId())
+                .stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+
+        var scores = session.getSolutions().stream()
+                .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
+                .collect(Collectors.toMap(
+                        Solution::getId,
+                        s -> weightedAverage(s, sumOfWeights)
+                ));
+
+        log.info("Calculated scores for weighted average: {}", scores);
+        return getUniqueMaxEntry(scores);
+    }
+
+    private double weightedAverage(Solution solution, Double sumOfWeights) {
+        List<Vote> votes = solution.getVotes();
+        double weight = attributeService.getWeightBySolutionId(solution.getId());
+
+        double weightedSum = votes.stream()
+                .mapToDouble(v -> v.getValue() * weight)
+                .sum();
+
+        return weightedSum / sumOfWeights;
+    }
+
+
+
+    private <K, V extends Comparable<V>> Optional<K> getUniqueMaxEntry(Map<K, V> scores) {
+        return scores.entrySet().stream()
+                .collect(Collectors.groupingBy(
+                        Map.Entry::getValue,
+                        Collectors.mapping(
+                                Map.Entry::getKey,
+                                Collectors.toList()
+                        )
+                ))
+                .entrySet().stream()
+                .max(Map.Entry.comparingByKey())
+                .filter(e -> e.getValue().size() == 1)
+                .map(e -> {
+                        log.info("Max Entry: {}", e.getKey());
+                        return e.getValue().getFirst();
+                    }
+                );
+    }
+
 }

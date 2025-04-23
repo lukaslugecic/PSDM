@@ -11,4 +11,5 @@ public class AttributeDTO {
     private Long id;
     private Long solutionId;
     private String title;
+    private String value;
 }

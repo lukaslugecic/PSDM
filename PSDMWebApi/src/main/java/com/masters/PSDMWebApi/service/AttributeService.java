@@ -14,4 +14,8 @@ public interface AttributeService {
     Attribute updateAttribute(Long id, Attribute session);
 
     void deleteAttribute(Long id);
+
+    List<Double> getAllWeightsBySessionId(Long id);
+
+    Double getWeightBySolutionId(Long id);
 }

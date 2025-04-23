@@ -53,6 +53,11 @@ public class SessionController {
         sessionService.deleteSession(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/bestSolution/{id}")
+    public ResponseEntity<Long> getBestSolution(@PathVariable Long id) {
+        return ResponseEntity.ok(sessionService.getBestSolution(id));
+    }
 }
 
 
