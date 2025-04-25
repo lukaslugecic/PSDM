@@ -2,10 +2,14 @@ package com.masters.PSDMWebApi.service.impl;
 
 import com.masters.PSDMWebApi.model.Session;
 import com.masters.PSDMWebApi.model.Solution;
+import com.masters.PSDMWebApi.model.User;
 import com.masters.PSDMWebApi.model.Vote;
 import com.masters.PSDMWebApi.repository.SessionRepository;
 import com.masters.PSDMWebApi.service.AttributeService;
 import com.masters.PSDMWebApi.service.SessionService;
+import com.masters.PSDMWebApi.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +25,7 @@ public class SessionServiceImpl implements SessionService {
     private final SessionRepository sessionRepository;
 
     private final AttributeService attributeService;
+    private final UserService userService;
 
     @Override
     public List<Session> getAllSessions() {
@@ -47,6 +52,23 @@ public class SessionServiceImpl implements SessionService {
     public void deleteSession(Long id) {
         sessionRepository.deleteById(id);
     }
+
+    @Override
+    @Transactional
+    public void addUsers(Long sessionId, List<Long> userIds) {
+        Session session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new EntityNotFoundException("Session not found with id: " + sessionId));
+
+        List<User> usersToAdd = userIds.stream()
+                .map(userService::getUserById)
+                .flatMap(Optional::stream)
+                .toList();
+
+        session.getUsers().clear();
+        session.getUsers().addAll(usersToAdd);
+        sessionRepository.save(session);
+    }
+
 
     @Override
     public Long getBestSolution(Long id) {

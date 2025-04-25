@@ -1,6 +1,7 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.ProblemDTO;
+import com.masters.PSDMWebApi.dto.request.ProblemRequestDTO;
 import com.masters.PSDMWebApi.mapper.ProblemMapper;
 import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.service.ProblemService;
@@ -35,7 +36,7 @@ public class ProblemController {
     }
 
     @PostMapping
-    public ResponseEntity<ProblemDTO> createProblem(@RequestBody ProblemDTO dto) {
+    public ResponseEntity<ProblemDTO> createProblem(@RequestBody ProblemRequestDTO dto) {
         Problem problem = ProblemMapper.toEntity(dto);
         Problem saved = problemService.createProblem(problem);
         return ResponseEntity.ok(ProblemMapper.toDTO(saved));

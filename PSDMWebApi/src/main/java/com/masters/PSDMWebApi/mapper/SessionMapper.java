@@ -1,7 +1,9 @@
 package com.masters.PSDMWebApi.mapper;
 
 import com.masters.PSDMWebApi.dto.SessionDTO;
+import com.masters.PSDMWebApi.dto.request.SessionRequestDTO;
 import com.masters.PSDMWebApi.model.DecisionMakingMethod;
+import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.model.ProblemSolvingMethod;
 import com.masters.PSDMWebApi.model.Session;
 
@@ -25,7 +27,19 @@ public class SessionMapper {
 
         Session entity = new Session();
         entity.setId(dto.getId());
-        entity.setId(dto.getProblemId());
+        entity.setProblem(new Problem(dto.getProblemId()));
+        entity.setProblemSolvingMethod(new ProblemSolvingMethod(dto.getProblemSolvingMethodId()));
+        entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
+        entity.setStart(dto.getStart());
+        entity.setEnd(dto.getEnd());
+        return entity;
+    }
+
+    public static Session toEntity(SessionRequestDTO dto) {
+        if (dto == null) return null;
+
+        Session entity = new Session();
+        entity.setProblem(new Problem(dto.getProblemId()));
         entity.setProblemSolvingMethod(new ProblemSolvingMethod(dto.getProblemSolvingMethodId()));
         entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
         entity.setStart(dto.getStart());

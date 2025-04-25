@@ -1,6 +1,8 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.SessionDTO;
+import com.masters.PSDMWebApi.dto.request.InviteUsersRequestDTO;
+import com.masters.PSDMWebApi.dto.request.SessionRequestDTO;
 import com.masters.PSDMWebApi.mapper.SessionMapper;
 import com.masters.PSDMWebApi.model.Session;
 import com.masters.PSDMWebApi.service.SessionService;
@@ -35,7 +37,7 @@ public class SessionController {
     }
 
     @PostMapping
-    public ResponseEntity<SessionDTO> createSession(@RequestBody SessionDTO dto) {
+    public ResponseEntity<SessionDTO> createSession(@RequestBody SessionRequestDTO dto) {
         Session session = SessionMapper.toEntity(dto);
         Session saved = sessionService.createSession(session);
         return ResponseEntity.ok(SessionMapper.toDTO(saved));
@@ -58,6 +60,13 @@ public class SessionController {
     public ResponseEntity<Long> getBestSolution(@PathVariable Long id) {
         return ResponseEntity.ok(sessionService.getBestSolution(id));
     }
+
+    @PostMapping("addUsers")
+    public ResponseEntity<Void> addUsers(@RequestBody InviteUsersRequestDTO dto) {
+        sessionService.addUsers(dto.getSessionId(), dto.getUserIds());
+        return ResponseEntity.ok().build();
+    }
+
 }
 
 
