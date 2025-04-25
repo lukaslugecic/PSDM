@@ -7,6 +7,6 @@ import retrofit2.http.POST
 
 interface ProblemApiService {
 
-    @POST("/api/problem")
+    @POST("problem")
     suspend fun createProblem(@Body request: ProblemRequest): ProblemResponse
 }

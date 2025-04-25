@@ -1,5 +1,6 @@
 package com.example.psdmclientapp.network
 
+import com.example.psdmclientapp.model.InviteUserRequest
 import com.example.psdmclientapp.model.SessionInfo
 import com.example.psdmclientapp.model.SessionRequest
 import com.example.psdmclientapp.model.SessionResponse
@@ -10,12 +11,15 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface SessionApiService {
-    @GET("api/session/{id}")
+    @GET("session/{id}")
     suspend fun getSessionInfo(@Path("id") sessionId: Long): Response<SessionInfo>
 
-    @POST("api/session/{id}/start")
+    @POST("session/{id}/start")
     suspend fun startSession(@Path("id") sessionId: Long): Response<Unit>
 
-    @POST("/api/session")
+    @POST("session")
     suspend fun createSession(@Body request: SessionRequest): SessionResponse
+
+    @POST("session/addUsers")
+    suspend fun inviteUsers(@Body request: InviteUserRequest)
 }

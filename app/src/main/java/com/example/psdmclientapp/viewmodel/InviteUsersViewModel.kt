@@ -8,8 +8,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.InviteUserRequest
 import com.example.psdmclientapp.model.User
 import com.example.psdmclientapp.network.ApiClient.userApi
+import com.example.psdmclientapp.network.ApiClient.sessionApi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,19 +25,16 @@ class InviteUsersViewModel @Inject constructor() : ViewModel() {
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
 
+    init {
+        loadUsers()
+    }
+
     fun loadUsers() {
         viewModelScope.launch {
             isLoading = true
             errorMessage = null
             try {
-                // TODO: Replace with real API call
-                delay(500)
-                availableUsers = listOf(
-                    User(1, "Ivan"),
-                    User(2, "Ana"),
-                    User(3, "Petra"),
-                    User(4, "Marko")
-                )
+                availableUsers = userApi.getUsers()
             } catch (e: Exception) {
                 errorMessage = "Greška pri dohvaćanju korisnika"
             } finally {
@@ -59,8 +56,9 @@ class InviteUsersViewModel @Inject constructor() : ViewModel() {
             isLoading = true
             errorMessage = null
             try {
-               // val request = InviteUserRequest(sessionId, selectedUserIds.toList())
-                // userApi.inviteUsers(request) // pretend this is implemented
+                println(selectedUserIds)
+                val request = InviteUserRequest(sessionId, selectedUserIds.toList())
+                sessionApi.inviteUsers(request)
             } catch (e: Exception) {
                 errorMessage = "Neuspjelo slanje pozivnica"
             } finally {

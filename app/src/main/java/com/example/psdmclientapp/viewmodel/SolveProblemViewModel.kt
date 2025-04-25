@@ -10,6 +10,10 @@ import com.example.psdmclientapp.model.ProblemRequest
 import com.example.psdmclientapp.network.ApiClient
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import com.example.psdmclientapp.model.DecisionMakingMethodDTO
+import com.example.psdmclientapp.model.ProblemSolvingMethodDTO
+import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.Long
 
@@ -18,52 +22,64 @@ class SolveProblemViewModel @Inject constructor() : ViewModel() {
 
     var title by mutableStateOf("")
     var description by mutableStateOf("")
-    var selectedSolvingMethod by mutableStateOf("")
-    var selectedDecisionMethod by mutableStateOf("")
+
+    var selectedSolvingMethodId by mutableStateOf<Long?>(null)
+    var selectedDecisionMethodId by mutableStateOf<Long?>(null)
+
+    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodDTO>>(emptyList())
+    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodDTO>>(emptyList())
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
+
+    init {
+        fetchMethods()
+    }
+
+    private fun fetchMethods() {
+        viewModelScope.launch {
+            try {
+                problemSolvingMethods = ApiClient.methodApiService.getSolvingSolvingMethods()
+                decisionMakingMethods = ApiClient.methodApiService.getDecisionMakingMethods()
+            } catch (e: Exception) {
+                errorMessage = "Failed to load methods: ${e.message}"
+            }
+        }
+    }
+
+
 
     suspend fun submit(onSuccess: (SessionResponse) -> Unit) {
         try {
             isLoading = true
             errorMessage = null
 
-            /*
+            val now = LocalDateTime.now().toString()
+
             val problem = ApiClient.problemApi.createProblem(
                 ProblemRequest(
-                    title = "novo",
-                    description = "novo",
-                    moderatorId = 1L,
-                    start = "2025-04-01T10:00:00",
-                    end = "2025-04-01T10:00:00"
+                    title = title,
+                    description = description,
+                    moderatorId = 1L, // Replace with dynamic moderator ID if needed
+                    start = now,
+                    end = now
                 )
             )
 
             val session = ApiClient.sessionApi.createSession(
                 SessionRequest(
                     problemId = problem.id,
-                    problemSolvingMethodId = 1L,
-                    decisionMakingMethodId = 1L,
-                    start = "2025-04-01T10:00:00",
-                    end = "2025-04-01T10:00:00"
+                    problemSolvingMethodId = selectedSolvingMethodId!!,
+                    decisionMakingMethodId = selectedDecisionMethodId!!,
+                    start = now,
+                    end = now
                 )
             )
-             */
-            val session = SessionResponse(
-                id = 1L,
-                problemId =1L,
-                problemSolvingMethodId = 1L,
-                decisionMakingMethodId = 1L,
-                start = "2025-04-01T10:00:00",
-                end = "2025-04-01T10:00:00"
-            )
-
 
             onSuccess(session)
 
         } catch (e: Exception) {
-            errorMessage = e.localizedMessage
+            errorMessage = e.localizedMessage ?: "Unexpected error"
         } finally {
             isLoading = false
         }

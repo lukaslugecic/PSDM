@@ -1,10 +1,9 @@
 package com.example.psdmclientapp.network
 
-import com.example.psdmclientapp.model.InviteUserRequest
-import retrofit2.http.Body
-import retrofit2.http.POST
+import com.example.psdmclientapp.model.User
+import retrofit2.http.GET
 
 interface UserApiService {
-    @POST("api/sessions/invite")
-    suspend fun inviteUsers(@Body request: InviteUserRequest)
+    @GET("user")
+    suspend fun getUsers(): List<User>
 }

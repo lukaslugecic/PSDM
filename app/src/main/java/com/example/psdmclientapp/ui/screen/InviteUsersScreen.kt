@@ -51,7 +51,7 @@ fun InviteUsersScreen(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(user.name)
+                        Text(user.name + " " + user.surname)
                         Checkbox(
                             checked = selectedUsers.contains(user.id),
                             onCheckedChange = {
