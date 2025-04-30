@@ -1,0 +1,138 @@
+package com.example.psdmclientapp.viewmodel
+
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.psdmclientapp.model.request.SolutionRequest
+import com.example.psdmclientapp.model.User
+import com.example.psdmclientapp.model.request.GroupSolutionRequest
+import com.example.psdmclientapp.network.ApiClient
+import com.example.psdmclientapp.state.ProblemSolvingSessionState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+import javax.inject.Inject
+
+@HiltViewModel
+class IdeaGenerationViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val sessionId: Long = checkNotNull(savedStateHandle["sessionId"])
+    private val problemId: Long = checkNotNull(savedStateHandle["problemId"])
+
+    var state by mutableStateOf(ProblemSolvingSessionState())
+        private set
+
+    fun loadSession(sessionId: Long) {
+        viewModelScope.launch {
+            try {
+                state = state.copy(isLoading = true)
+
+                val sessionDetails = ApiClient.sessionApi.getSessionDetails(sessionId)
+                val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+                //val currentUser = ApiClient.authApi.getCurrentUser();
+
+                val currentUser = User(
+                    2L,
+                    "Ime",
+                    "Prezime",
+                    "Email",
+                    LocalDate.now(),
+                    1L
+                )
+
+                state = state.copy(
+                    problemTitle = sessionDetails.body()?.problem?.title.toString(),
+                    problemDescription = sessionDetails.body()?.problem?.description.toString(),
+                    solutions = solutions,
+                    isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
+                    currentUserId = currentUser.id,
+                    isLoading = false
+                )
+
+            } catch (e: Exception) {
+                state = state.copy(
+                    errorMessage = e.localizedMessage,
+                    isLoading = false
+                )
+            }
+        }
+    }
+
+    fun refreshSolutions() {
+        viewModelScope.launch {
+            try {
+                val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+                state = state.copy(solutions = solutions)
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
+    fun submitSolution(text: String) {
+        viewModelScope.launch {
+            try {
+                val newSolution = ApiClient.solutionApi.submitSolution(
+                    SolutionRequest(
+                        text,
+                        text,
+                        state.currentUserId,
+                        problemId,
+                        sessionId
+                    )
+                )
+                state = state.copy(
+                    solutions = state.solutions + newSolution
+                )
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
+    fun endProblemSolving() {
+        viewModelScope.launch {
+            try {
+               // ApiClient.sessionApi.endProblemSolving(sessionId)
+                println("endam ti mamu")
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
+    fun submitGroupedSolution(newTitle: String, solutionIds: List<Long>) {
+        println("submit")
+        viewModelScope.launch {
+            try {
+                val combinedText = state.solutions
+                    .filter { solutionIds.contains(it.id) }
+                    .joinToString(separator = "\n") { "- ${it.title}" }
+
+                val newSolution = ApiClient.solutionApi.groupSolutions(
+                    GroupSolutionRequest(
+                        solutionIds,
+                        SolutionRequest(
+                            title = newTitle,
+                            description = combinedText,
+                            userId = state.currentUserId,
+                            problemId = problemId,
+                            sessionId = sessionId
+                        )
+                    )
+                )
+
+                state = state.copy(solutions = state.solutions + newSolution)
+
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
+}

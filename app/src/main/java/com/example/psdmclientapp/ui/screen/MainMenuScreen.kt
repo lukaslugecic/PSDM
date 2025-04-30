@@ -31,8 +31,8 @@ fun MainMenuScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = { navController.navigate("solveProblem") }) {
-                Text("Solve Problem")
+            Button(onClick = { navController.navigate("createProblem") }) {
+                Text("Create Problem")
             }
             Button(onClick = { navController.navigate("myProblems") }) {
                 Text("My Problems")

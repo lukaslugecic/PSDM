@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun InviteUsersScreen(
     navController: NavHostController,
+    problemId: Long,
     sessionId: Long,
     viewModel: InviteUsersViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
@@ -70,7 +71,7 @@ fun InviteUsersScreen(
                         viewModel.sendInvites(sessionId)
                         if (viewModel.errorMessage == null) {
                            // navController.navigate("sessionLobby/$sessionId")
-                            navController.navigate("sessionLobby/1")
+                            navController.navigate("ideaGeneration/$problemId/$sessionId")
                         }
                     }
                 },

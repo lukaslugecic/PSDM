@@ -1,6 +1,4 @@
-package com.example.psdmclientapp.model
-
-import java.time.LocalDateTime
+package com.example.psdmclientapp.model.request
 
 data class SessionRequest(
     val problemId: Long,

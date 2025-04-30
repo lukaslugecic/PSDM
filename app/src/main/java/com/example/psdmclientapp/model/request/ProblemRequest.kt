@@ -1,4 +1,4 @@
-package com.example.psdmclientapp.model
+package com.example.psdmclientapp.model.request
 
 data class ProblemRequest(
     val title: String,

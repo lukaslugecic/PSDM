@@ -13,9 +13,10 @@ import androidx.navigation.navArgument
 import com.example.psdmclientapp.ui.screen.DecisionPhaseScreen
 import com.example.psdmclientapp.ui.screen.InviteUsersScreen
 import com.example.psdmclientapp.ui.screen.MainMenuScreen
-import com.example.psdmclientapp.ui.screen.ProblemSolvingSessionScreen
+import com.example.psdmclientapp.ui.screen.IdeaGenerationScreen
 import com.example.psdmclientapp.ui.screen.SessionLobbyScreen
-import com.example.psdmclientapp.ui.screen.SolveProblemScreen
+import com.example.psdmclientapp.ui.screen.CreateProblemScreen
+import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,14 +35,18 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable("mainMenu") { MainMenuScreen(navController) }
-        composable("solveProblem") { SolveProblemScreen(navController) }
+        composable("createProblem") { CreateProblemScreen(navController) }
 
         composable(
-            route = "inviteUsers/{sessionId}",
-            arguments = listOf(navArgument("sessionId") { type = NavType.LongType })
+            route = "inviteUsers/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
         ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
-            InviteUsersScreen(navController, sessionId)
+            InviteUsersScreen(navController, problemId, sessionId)
         }
 
         composable(
@@ -53,11 +58,27 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
         }
 
         composable(
-            route = "session/{sessionId}",
-            arguments = listOf(navArgument("sessionId") { type = NavType.LongType })
+            route = "ideaGeneration/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
         ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
-            ProblemSolvingSessionScreen(navController, sessionId)
+            IdeaGenerationScreen(navController, problemId, sessionId)
+        }
+
+        composable(
+            route = "groupIdeas/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
+            val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+            IdeaGroupingScreen(navController, problemId, sessionId)
         }
 
         composable(

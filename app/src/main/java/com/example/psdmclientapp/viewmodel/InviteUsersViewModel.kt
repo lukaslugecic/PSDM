@@ -5,7 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.psdmclientapp.model.InviteUserRequest
+import com.example.psdmclientapp.model.request.InviteUserRequest
 import com.example.psdmclientapp.model.User
 import com.example.psdmclientapp.network.ApiClient.userApi
 import com.example.psdmclientapp.network.ApiClient.sessionApi

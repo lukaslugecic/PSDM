@@ -1,9 +1,8 @@
 package com.example.psdmclientapp.ui.screen
 
-import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
-import com.example.psdmclientapp.viewmodel.SolveProblemViewModel
+import com.example.psdmclientapp.viewmodel.CreateProblemViewModel
 import androidx.compose.material3.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -66,7 +65,7 @@ fun DropdownSelector(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SolveProblemScreen(navController: NavHostController, viewModel: SolveProblemViewModel = viewModel()) {
+fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProblemViewModel = viewModel()) {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -119,7 +118,7 @@ fun SolveProblemScreen(navController: NavHostController, viewModel: SolveProblem
                 onClick = {
                     coroutineScope.launch {
                         viewModel.submit { session ->
-                            navController.navigate("inviteUsers/${session.id}")
+                            navController.navigate("inviteUsers/${session.problemId}/${session.id}")
                         }
                     }
                 },

@@ -4,21 +4,22 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import com.example.psdmclientapp.model.SessionRequest
+import com.example.psdmclientapp.model.request.SessionRequest
 import com.example.psdmclientapp.model.SessionResponse
-import com.example.psdmclientapp.model.ProblemRequest
+import com.example.psdmclientapp.model.request.ProblemRequest
 import com.example.psdmclientapp.network.ApiClient
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import com.example.psdmclientapp.model.DecisionMakingMethodDTO
-import com.example.psdmclientapp.model.ProblemSolvingMethodDTO
+import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
+import com.example.psdmclientapp.model.DecisionMakingMethod
+import com.example.psdmclientapp.model.ProblemSolvingMethod
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.Long
 
 @HiltViewModel
-class SolveProblemViewModel @Inject constructor() : ViewModel() {
+class CreateProblemViewModel @Inject constructor() : ViewModel() {
 
     var title by mutableStateOf("")
     var description by mutableStateOf("")
@@ -26,8 +27,8 @@ class SolveProblemViewModel @Inject constructor() : ViewModel() {
     var selectedSolvingMethodId by mutableStateOf<Long?>(null)
     var selectedDecisionMethodId by mutableStateOf<Long?>(null)
 
-    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodDTO>>(emptyList())
-    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodDTO>>(emptyList())
+    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethod>>(emptyList())
+    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethod>>(emptyList())
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
@@ -56,23 +57,22 @@ class SolveProblemViewModel @Inject constructor() : ViewModel() {
 
             val now = LocalDateTime.now().toString()
 
-            val problem = ApiClient.problemApi.createProblem(
-                ProblemRequest(
-                    title = title,
-                    description = description,
-                    moderatorId = 1L, // Replace with dynamic moderator ID if needed
-                    start = now,
-                    end = now
-                )
-            )
-
-            val session = ApiClient.sessionApi.createSession(
-                SessionRequest(
-                    problemId = problem.id,
-                    problemSolvingMethodId = selectedSolvingMethodId!!,
-                    decisionMakingMethodId = selectedDecisionMethodId!!,
-                    start = now,
-                    end = now
+            val session = ApiClient.sessionApi.createProblemAndSession(
+                CreateProblemAndSessionRequest(
+                    ProblemRequest(
+                        title = title,
+                        description = description,
+                        moderatorId = 1L, // Replace with dynamic moderator ID if needed
+                        start = now,
+                        end = now
+                    ),
+                    SessionRequest(
+                        problemId = 1,
+                        problemSolvingMethodId = selectedSolvingMethodId!!,
+                        decisionMakingMethodId = selectedDecisionMethodId!!,
+                        start = now,
+                        end = now
+                    )
                 )
             )
 
