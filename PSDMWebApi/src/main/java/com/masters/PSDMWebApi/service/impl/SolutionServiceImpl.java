@@ -1,8 +1,11 @@
 package com.masters.PSDMWebApi.service.impl;
 
+import com.masters.PSDMWebApi.dto.request.GroupSolutionRequestDTO;
+import com.masters.PSDMWebApi.mapper.SolutionMapper;
 import com.masters.PSDMWebApi.model.Solution;
 import com.masters.PSDMWebApi.repository.SolutionRepository;
 import com.masters.PSDMWebApi.service.SolutionService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,5 +45,22 @@ public class SolutionServiceImpl implements SolutionService {
     public void deleteSolution(Long id) {
         solutionRepository.deleteById(id);
     }
+
+    @Override
+    public List<Solution> getSolutionsBySessionId(Long id) {
+        return solutionRepository.findBySessionId(id);
+    }
+
+    @Override
+    @Transactional
+    public Solution groupSolutions(GroupSolutionRequestDTO dto) {
+        List<Solution> solutions = solutionRepository.findAllById(dto.getSolutionIds());
+
+        solutions.forEach(solution -> solution.setGrouped(true));
+        solutionRepository.saveAll(solutions);
+
+        return createSolution(SolutionMapper.toEntity(dto.getSolution()));
+    }
+
 }
 

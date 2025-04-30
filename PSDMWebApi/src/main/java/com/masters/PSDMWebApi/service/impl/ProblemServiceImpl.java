@@ -3,19 +3,17 @@ package com.masters.PSDMWebApi.service.impl;
 import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.repository.ProblemRepository;
 import com.masters.PSDMWebApi.service.ProblemService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@AllArgsConstructor
 public class ProblemServiceImpl implements ProblemService {
 
     private final ProblemRepository problemRepository;
-
-    public ProblemServiceImpl(ProblemRepository problemRepository) {
-        this.problemRepository = problemRepository;
-    }
 
     @Override
     public List<Problem> getAllProblems() {

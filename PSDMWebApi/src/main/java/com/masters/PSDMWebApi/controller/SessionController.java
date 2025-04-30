@@ -1,6 +1,8 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.SessionDTO;
+import com.masters.PSDMWebApi.dto.SessionDetailsDTO;
+import com.masters.PSDMWebApi.dto.request.CreateProblemAndSessionRequestDTO;
 import com.masters.PSDMWebApi.dto.request.InviteUsersRequestDTO;
 import com.masters.PSDMWebApi.dto.request.SessionRequestDTO;
 import com.masters.PSDMWebApi.mapper.SessionMapper;
@@ -36,11 +38,28 @@ public class SessionController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/details/{id}")
+    public ResponseEntity<SessionDetailsDTO> getSessionDetailsById(@PathVariable Long id) {
+        return sessionService.getSessionDetailsById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
     @PostMapping
     public ResponseEntity<SessionDTO> createSession(@RequestBody SessionRequestDTO dto) {
         Session session = SessionMapper.toEntity(dto);
         Session saved = sessionService.createSession(session);
         return ResponseEntity.ok(SessionMapper.toDTO(saved));
+    }
+
+    @PostMapping("/andProblem")
+    public ResponseEntity<SessionDTO> createProblemAndSession(@RequestBody CreateProblemAndSessionRequestDTO dto) {
+        return ResponseEntity.ok(
+                SessionMapper.toDTO(
+                        sessionService.createProblemAndSession(dto)
+                )
+        );
     }
 
     @PutMapping("/{id}")

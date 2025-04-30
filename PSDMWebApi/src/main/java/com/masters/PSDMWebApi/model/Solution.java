@@ -31,6 +31,9 @@ public class Solution {
     @Column(name = "chosen")
     private Boolean chosen;
 
+    @Column(name = "grouped")
+    private Boolean grouped;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;

@@ -1,0 +1,11 @@
+package com.masters.PSDMWebApi.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class SessionDetailsDTO {
+    private ProblemDTO problem;
+    private SessionDTO session;
+}

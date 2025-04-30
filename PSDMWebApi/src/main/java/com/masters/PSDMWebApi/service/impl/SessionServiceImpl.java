@@ -1,11 +1,13 @@
 package com.masters.PSDMWebApi.service.impl;
 
-import com.masters.PSDMWebApi.model.Session;
-import com.masters.PSDMWebApi.model.Solution;
-import com.masters.PSDMWebApi.model.User;
-import com.masters.PSDMWebApi.model.Vote;
+import com.masters.PSDMWebApi.dto.SessionDetailsDTO;
+import com.masters.PSDMWebApi.dto.request.CreateProblemAndSessionRequestDTO;
+import com.masters.PSDMWebApi.mapper.ProblemMapper;
+import com.masters.PSDMWebApi.mapper.SessionMapper;
+import com.masters.PSDMWebApi.model.*;
 import com.masters.PSDMWebApi.repository.SessionRepository;
 import com.masters.PSDMWebApi.service.AttributeService;
+import com.masters.PSDMWebApi.service.ProblemService;
 import com.masters.PSDMWebApi.service.SessionService;
 import com.masters.PSDMWebApi.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +27,7 @@ public class SessionServiceImpl implements SessionService {
     private final SessionRepository sessionRepository;
 
     private final AttributeService attributeService;
+    private final ProblemService problemService;
     private final UserService userService;
 
     @Override
@@ -38,7 +41,29 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    public Optional<SessionDetailsDTO> getSessionDetailsById(Long id) {
+        return sessionRepository.findById(id)
+                .flatMap(session -> {
+                        SessionDetailsDTO detailsDTO = new SessionDetailsDTO(
+                                ProblemMapper.toDTO(session.getProblem()),
+                                SessionMapper.toDTO(session)
+                                );
+                        return Optional.of(detailsDTO);
+                });
+    }
+
+    @Override
     public Session createSession(Session session) {
+        return sessionRepository.save(session);
+    }
+
+    @Override
+    @Transactional
+    public Session createProblemAndSession(CreateProblemAndSessionRequestDTO dto) {
+        Problem problem = ProblemMapper.toEntity(dto.getProblem());
+        problemService.createProblem(problem);
+        Session session = SessionMapper.toEntity(dto.getSession());
+        session.setProblem(problem);
         return sessionRepository.save(session);
     }
 
