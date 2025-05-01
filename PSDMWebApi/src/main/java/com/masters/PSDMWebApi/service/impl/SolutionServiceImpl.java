@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SolutionServiceImpl implements SolutionService {
@@ -48,7 +49,10 @@ public class SolutionServiceImpl implements SolutionService {
 
     @Override
     public List<Solution> getSolutionsBySessionId(Long id) {
-        return solutionRepository.findBySessionId(id);
+        return solutionRepository.findBySessionId(id)
+                .stream()
+                .filter(solution -> solution.getGrouped().equals(false))
+                .collect(Collectors.toList());
     }
 
     @Override
