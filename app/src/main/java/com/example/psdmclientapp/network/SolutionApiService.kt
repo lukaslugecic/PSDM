@@ -1,6 +1,6 @@
 package com.example.psdmclientapp.network
 
-import com.example.psdmclientapp.model.Solution
+import com.example.psdmclientapp.model.SolutionResponse
 import com.example.psdmclientapp.model.request.GroupSolutionRequest
 import com.example.psdmclientapp.model.request.SolutionRequest
 import retrofit2.http.Body
@@ -11,11 +11,11 @@ import retrofit2.http.Path
 interface SolutionApiService {
 
     @POST("solution")
-    suspend fun submitSolution(@Body solutionRequest: SolutionRequest) : Solution
+    suspend fun submitSolution(@Body solutionRequest: SolutionRequest) : SolutionResponse
 
     @GET("solution/session/{sessionId}")
-    suspend fun getSolutionsBySessionId(@Path("sessionId") sessionId: Long) : List<Solution>
+    suspend fun getSolutionsBySessionId(@Path("sessionId") sessionId: Long) : List<SolutionResponse>
 
     @POST("solution/group")
-    suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : Solution
+    suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : SolutionResponse
 }

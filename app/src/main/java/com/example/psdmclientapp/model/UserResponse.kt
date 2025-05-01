@@ -2,7 +2,7 @@ package com.example.psdmclientapp.model
 
 import java.time.LocalDate
 
-data class User (
+data class UserResponse (
     val id: Long,
     val name: String,
     val surname: String,

@@ -20,7 +20,7 @@ fun IdeaGenerationScreen(
     sessionId: Long,
     viewModel: IdeaGenerationViewModel = viewModel()
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    rememberCoroutineScope()
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
@@ -29,7 +29,7 @@ fun IdeaGenerationScreen(
         viewModel.loadSession(sessionId)
 
         while (true) {
-            delay(4000) // polling svakih 4 sekunde
+            delay(4000)
             viewModel.refreshSolutions()
         }
     }
@@ -39,7 +39,6 @@ fun IdeaGenerationScreen(
     ) { padding ->
 
         if (state.isLoading) {
-            // 🔥 Show loading indicator in center
             Box(
                 modifier = Modifier
                     .padding(padding)
@@ -49,7 +48,6 @@ fun IdeaGenerationScreen(
                 CircularProgressIndicator()
             }
         } else {
-            // 🔥 Show actual content when loaded
             Column(
                 modifier = Modifier
                     .padding(padding)
@@ -125,6 +123,24 @@ fun IdeaGenerationScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     Text("Grupiraj ideje")
+                }
+
+                Button(
+                    onClick = {
+                        navController.navigate("nominalGroup/${problemId}/${sessionId}")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Text("Nominalna grupa")
+                }
+
+                Button(
+                    onClick = {
+                        navController.navigate("voting/${problemId}/${sessionId}")
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Text("Glasanje")
                 }
 
 

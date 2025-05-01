@@ -12,8 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
-import com.example.psdmclientapp.model.DecisionMakingMethod
-import com.example.psdmclientapp.model.ProblemSolvingMethod
+import com.example.psdmclientapp.model.DecisionMakingMethodResponse
+import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import kotlin.Long
@@ -27,8 +27,8 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
     var selectedSolvingMethodId by mutableStateOf<Long?>(null)
     var selectedDecisionMethodId by mutableStateOf<Long?>(null)
 
-    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethod>>(emptyList())
-    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethod>>(emptyList())
+    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodResponse>>(emptyList())
+    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodResponse>>(emptyList())
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)

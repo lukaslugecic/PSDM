@@ -1,8 +1,6 @@
 package com.example.psdmclientapp.model
 
-import java.time.LocalDateTime
-
-data class SessionDetails(
+data class SessionDetailsResponse(
     val problem: ProblemResponse,
     val session: SessionResponse
 )

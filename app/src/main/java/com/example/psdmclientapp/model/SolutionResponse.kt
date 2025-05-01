@@ -1,8 +1,6 @@
 package com.example.psdmclientapp.model
 
-import java.time.LocalDateTime
-
-data class Solution (
+data class SolutionResponse (
     val id: Long,
     val title: String,
     val description: String,

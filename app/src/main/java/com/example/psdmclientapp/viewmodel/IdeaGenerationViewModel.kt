@@ -6,8 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.psdmclientapp.enum.DecisionMakingMethod
+import com.example.psdmclientapp.enum.ProblemSolvingMethod
 import com.example.psdmclientapp.model.request.SolutionRequest
-import com.example.psdmclientapp.model.User
+import com.example.psdmclientapp.model.UserResponse
 import com.example.psdmclientapp.model.request.GroupSolutionRequest
 import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.state.ProblemSolvingSessionState
@@ -36,7 +38,7 @@ class IdeaGenerationViewModel @Inject constructor(
                 val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
                 //val currentUser = ApiClient.authApi.getCurrentUser();
 
-                val currentUser = User(
+                val currentUser = UserResponse(
                     2L,
                     "Ime",
                     "Prezime",
@@ -45,13 +47,18 @@ class IdeaGenerationViewModel @Inject constructor(
                     1L
                 )
 
+                val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
+                val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1
+
                 state = state.copy(
                     problemTitle = sessionDetails.body()?.problem?.title.toString(),
                     problemDescription = sessionDetails.body()?.problem?.description.toString(),
                     solutions = solutions,
                     isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
                     currentUserId = currentUser.id,
-                    isLoading = false
+                    isLoading = false,
+                    problemSolvingMethod = ProblemSolvingMethod.fromId(problemSolvingMethodId) ?: ProblemSolvingMethod.BRAINSTORMING,
+                    decisionMakingMethod = DecisionMakingMethod.fromId(decisionMakingMethodId) ?: DecisionMakingMethod.AVERAGE_WINNER
                 )
 
             } catch (e: Exception) {
@@ -134,5 +141,51 @@ class IdeaGenerationViewModel @Inject constructor(
             }
         }
     }
+
+    fun refreshTurn() {
+        viewModelScope.launch {
+            try {
+                val turnUserId = ApiClient.sessionApi.getCurrentTurnUserId(sessionId)
+                val isMyTurn = turnUserId == state.currentUserId
+                state = state.copy(
+                    currentUserId = turnUserId,
+                    isCurrentTurn = isMyTurn
+                )
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
+    fun submitTurnIdea(title: String) {
+        if (!state.isCurrentTurn) {
+            state = state.copy(errorMessage = "Nisi na redu!")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val newSolution = ApiClient.solutionApi.submitSolution(
+                    SolutionRequest(
+                        title,
+                        title,
+                        state.currentUserId,
+                        problemId,
+                        sessionId
+                    )
+                )
+                state = state.copy(
+                    solutions = state.solutions + newSolution
+                )
+
+                // Napredak u krugu
+                ApiClient.sessionApi.advanceTurn(sessionId)
+                refreshTurn()
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
 
 }

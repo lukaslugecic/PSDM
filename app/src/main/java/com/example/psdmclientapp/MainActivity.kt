@@ -10,13 +10,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.psdmclientapp.ui.screen.DecisionPhaseScreen
 import com.example.psdmclientapp.ui.screen.InviteUsersScreen
 import com.example.psdmclientapp.ui.screen.MainMenuScreen
 import com.example.psdmclientapp.ui.screen.IdeaGenerationScreen
 import com.example.psdmclientapp.ui.screen.SessionLobbyScreen
 import com.example.psdmclientapp.ui.screen.CreateProblemScreen
+import com.example.psdmclientapp.ui.screen.DecisionResultScreen
 import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
+import com.example.psdmclientapp.ui.screen.NominalGroupScreen
+import com.example.psdmclientapp.ui.screen.VotingScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,11 +84,39 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
         }
 
         composable(
-            "decisionPhase/{sessionId}",
-            arguments = listOf(navArgument("sessionId") { type = NavType.LongType })
+            "nominalGroup/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
         ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
-            DecisionPhaseScreen(navController, sessionId)
+            NominalGroupScreen(navController, problemId, sessionId)
+        }
+
+        composable(
+            "voting/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
+            val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+            VotingScreen(navController, problemId, sessionId)
+        }
+
+        composable(
+            "decisionResult/{problemId}/{sessionId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+                navArgument("sessionId") { type = NavType.LongType }
+            )
+        ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
+            val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+            DecisionResultScreen(navController, problemId, sessionId)
         }
 
     }

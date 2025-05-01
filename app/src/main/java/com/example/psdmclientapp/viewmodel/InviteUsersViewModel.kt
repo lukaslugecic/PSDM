@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.request.InviteUserRequest
-import com.example.psdmclientapp.model.User
+import com.example.psdmclientapp.model.UserResponse
 import com.example.psdmclientapp.network.ApiClient.userApi
 import com.example.psdmclientapp.network.ApiClient.sessionApi
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class InviteUsersViewModel @Inject constructor() : ViewModel() {
 
-    var availableUsers by mutableStateOf<List<User>>(emptyList())
+    var availableUsers by mutableStateOf<List<UserResponse>>(emptyList())
         private set
 
     var selectedUserIds by mutableStateOf<Set<Long>>(emptySet())
