@@ -15,7 +15,6 @@ public class ProblemSolvingMethodStepMapper {
         dto.setMethodId(methodStep.getMethod().getId());
         dto.setStepId(methodStep.getStep().getId());
         dto.setOrdinal(methodStep.getOrdinal());
-        dto.setRepetitions(methodStep.getRepetitions());
         dto.setDuration(methodStep.getDuration());
         return dto;
     }
@@ -27,7 +26,6 @@ public class ProblemSolvingMethodStepMapper {
         entity.setMethod(new ProblemSolvingMethod(dto.getMethodId()));
         entity.setStep(new Step(dto.getStepId()));
         entity.setOrdinal(dto.getOrdinal());
-        entity.setRepetitions(dto.getRepetitions());
         entity.setDuration(dto.getDuration());
         return entity;
     }

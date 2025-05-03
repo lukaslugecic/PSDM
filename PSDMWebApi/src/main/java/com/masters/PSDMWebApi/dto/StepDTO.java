@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,4 +13,6 @@ public class StepDTO {
     private Long id;
     private String title;
     private String description;
+    private Integer ordinal;
+    private Duration duration;
 }

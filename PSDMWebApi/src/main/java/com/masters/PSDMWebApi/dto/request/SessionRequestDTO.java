@@ -14,4 +14,5 @@ public class SessionRequestDTO {
     private Long decisionMakingMethodId;
     private LocalDateTime start;
     private LocalDateTime end;
+    private Long parentSessionId;
 }

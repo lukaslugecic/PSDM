@@ -46,6 +46,13 @@ public class Session {
     @OneToMany(mappedBy = "session")
     private List<Solution> solutions;
 
+    @ManyToOne
+    @JoinColumn(name = "parent_session_id")
+    private Session parentSession;
+
+    @OneToMany(mappedBy = "parentSession")
+    private List<Session> subSessions;
+
     public Session (Long id) {
         this.id = id;
     }

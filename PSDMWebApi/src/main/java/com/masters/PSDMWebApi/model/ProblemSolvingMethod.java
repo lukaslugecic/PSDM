@@ -27,8 +27,8 @@ public class ProblemSolvingMethod {
     @OneToMany(mappedBy = "problemSolvingMethod")
     private List<Session> sessions;
 
-    @OneToMany(mappedBy = "method")
-    private List<ProblemSolvingMethodStep> methodSteps;
+    @OneToMany(mappedBy = "method", fetch = FetchType.EAGER)
+    private List<ProblemSolvingMethodStep> methodSteps = new ArrayList<>();
 
     public ProblemSolvingMethod (Long id) {
         this.id = id;

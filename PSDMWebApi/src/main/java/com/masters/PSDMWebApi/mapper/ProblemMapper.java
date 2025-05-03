@@ -5,6 +5,8 @@ import com.masters.PSDMWebApi.dto.request.ProblemRequestDTO;
 import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.model.User;
 
+import java.time.LocalDateTime;
+
 public class ProblemMapper {
 
     public static ProblemDTO toDTO(Problem problem) {
@@ -40,8 +42,7 @@ public class ProblemMapper {
         entity.setTitle(dto.getTitle());
         entity.setDescription(dto.getDescription());
         entity.setModerator(new User(dto.getModeratorId()));
-        entity.setStart(dto.getStart());
-        entity.setEnd(dto.getEnd());
+        entity.setStart(LocalDateTime.now());
         return entity;
     }
 }

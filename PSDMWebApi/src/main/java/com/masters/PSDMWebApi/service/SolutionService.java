@@ -20,5 +20,7 @@ public interface SolutionService {
     void deleteSolution(Long id);
 
     List<Solution> getSolutionsBySessionId(Long sessionId);
+
+    List<Solution> getSolutionsByParentSessionIdOrSessionId(Long sessionId);
 }
 

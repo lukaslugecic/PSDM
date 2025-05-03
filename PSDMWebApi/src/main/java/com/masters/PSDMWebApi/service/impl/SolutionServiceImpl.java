@@ -56,6 +56,14 @@ public class SolutionServiceImpl implements SolutionService {
     }
 
     @Override
+    public List<Solution> getSolutionsByParentSessionIdOrSessionId (Long id) {
+        return solutionRepository.findBySessionIdOrParentSessionId(id)
+                .stream()
+                .filter(solution -> solution.getGrouped().equals(false))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public Solution groupSolutions(GroupSolutionRequestDTO dto) {
         List<Solution> solutions = solutionRepository.findAllById(dto.getSolutionIds());

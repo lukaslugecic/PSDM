@@ -1,12 +1,15 @@
 package com.masters.PSDMWebApi.service.impl;
 
 
+import com.masters.PSDMWebApi.model.Session;
 import com.masters.PSDMWebApi.model.User;
 import com.masters.PSDMWebApi.repository.UserRepository;
 import com.masters.PSDMWebApi.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -43,4 +46,20 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    @Override
+    public Long getCurrentSubsessionId(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getSessions)
+                .flatMap(sessions -> sessions.stream()
+                        .filter(session -> session.getParentSession() != null)
+                        .filter(session -> session.getStart().isBefore(LocalDateTime.now())
+                                && session.getEnd().isAfter(LocalDateTime.now())
+                        )
+                        .findFirst()
+                )
+                .map(Session::getId)
+                .orElseThrow(() -> new NoSuchElementException("Active session not found for user ID: " + userId));
+    }
+
 }

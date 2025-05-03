@@ -5,6 +5,7 @@ import com.masters.PSDMWebApi.mapper.UserMapper;
 import com.masters.PSDMWebApi.model.User;
 import com.masters.PSDMWebApi.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -32,6 +34,14 @@ public class UserController {
                 .map(UserMapper::toDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/currentSubSession/{id}")
+    public ResponseEntity<Long> getCurrentSubSession(@PathVariable Long id) {
+        Long res = userService.getCurrentSubsessionId(id);
+        log.debug("Request to getCurrentSubSession: {}", res );
+        return ResponseEntity.ok(res);
+
     }
 
     @PostMapping

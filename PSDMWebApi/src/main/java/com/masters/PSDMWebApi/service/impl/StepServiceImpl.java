@@ -11,35 +11,35 @@ import java.util.Optional;
 @Service
 public class StepServiceImpl implements StepService {
 
-    private final StepRepository sessionRepository;
+    private final StepRepository stepRepository;
 
-    public StepServiceImpl(StepRepository sessionRepository) {
-        this.sessionRepository = sessionRepository;
+    public StepServiceImpl(StepRepository stepRepository) {
+        this.stepRepository = stepRepository;
     }
 
     @Override
     public List<Step> getAllSteps() {
-        return sessionRepository.findAll();
+        return stepRepository.findAll();
     }
 
     @Override
     public Optional<Step> getStepById(Long id) {
-        return sessionRepository.findById(id);
+        return stepRepository.findById(id);
     }
 
     @Override
-    public Step createStep(Step session) {
-        return sessionRepository.save(session);
+    public Step createStep(Step step) {
+        return stepRepository.save(step);
     }
 
     @Override
-    public Step updateStep(Long id, Step session) {
-        session.setId(id);
-        return sessionRepository.save(session);
+    public Step updateStep(Long id, Step step) {
+        step.setId(id);
+        return stepRepository.save(step);
     }
 
     @Override
     public void deleteStep(Long id) {
-        sessionRepository.deleteById(id);
+        stepRepository.deleteById(id);
     }
 }

@@ -36,6 +36,14 @@ public class SolutionController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/session/parent/{sessionId}")
+    public List<SolutionDTO> getSolutionsByParentSessionIdOrSessionId(@PathVariable Long sessionId) {
+        return solutionService.getSolutionsByParentSessionIdOrSessionId(sessionId)
+                .stream()
+                .map(SolutionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<SolutionDTO> getSolutionById(@PathVariable Long id) {
         return solutionService.getSolutionById(id)

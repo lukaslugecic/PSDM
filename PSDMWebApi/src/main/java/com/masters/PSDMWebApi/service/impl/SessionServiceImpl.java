@@ -6,17 +6,20 @@ import com.masters.PSDMWebApi.mapper.ProblemMapper;
 import com.masters.PSDMWebApi.mapper.SessionMapper;
 import com.masters.PSDMWebApi.model.*;
 import com.masters.PSDMWebApi.repository.SessionRepository;
-import com.masters.PSDMWebApi.service.AttributeService;
-import com.masters.PSDMWebApi.service.ProblemService;
-import com.masters.PSDMWebApi.service.SessionService;
-import com.masters.PSDMWebApi.service.UserService;
+import com.masters.PSDMWebApi.service.*;
+import com.masters.PSDMWebApi.util.Pair;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,8 +29,12 @@ public class SessionServiceImpl implements SessionService {
 
     private final SessionRepository sessionRepository;
 
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
     private final AttributeService attributeService;
     private final ProblemService problemService;
+    private final ProblemSolvingMethodService problemSolvingMethodService;
+    private final ProblemSolvingMethodStepService methodStepService;
     private final UserService userService;
 
     @Override
@@ -46,8 +53,11 @@ public class SessionServiceImpl implements SessionService {
                 .flatMap(session -> {
                         SessionDetailsDTO detailsDTO = new SessionDetailsDTO(
                                 ProblemMapper.toDTO(session.getProblem()),
-                                SessionMapper.toDTO(session)
-                                );
+                                SessionMapper.toDTO(session),
+                                methodStepService.getStepDetails(
+                                        session.getProblemSolvingMethod().getMethodSteps()
+                                )
+                        );
                         return Optional.of(detailsDTO);
                 });
     }
@@ -64,8 +74,35 @@ public class SessionServiceImpl implements SessionService {
         problemService.createProblem(problem);
         Session session = SessionMapper.toEntity(dto.getSession());
         session.setProblem(problem);
+        session.setStart(LocalDateTime.now());
+
+        Optional<ProblemSolvingMethod> methodOpt =
+                problemSolvingMethodService.getProblemSolvingMethodById(dto.getSession().getProblemSolvingMethodId());
+
+        if (methodOpt.isEmpty()) {
+            throw new IllegalArgumentException("Invalid problem solving method ID: " + dto.getSession().getProblemSolvingMethodId());
+        }
+
+        session.setProblemSolvingMethod(methodOpt.get());
+
+        session.setEnd(calculateEndOfSession(session));
         return sessionRepository.save(session);
     }
+
+    private LocalDateTime calculateEndOfSession(Session session) {
+        LocalDateTime start = session.getStart() != null ? session.getStart() : LocalDateTime.now();
+
+        log.info("session.getProblemSolvingMethod {}", session.getProblemSolvingMethod());
+
+        log.info("ession.getProblemSolvingMethod().getMethodSteps() {}", session.getProblemSolvingMethod().getMethodSteps());
+
+        Duration totalDuration = session.getProblemSolvingMethod().getMethodSteps().stream()
+                .map(ProblemSolvingMethodStep::getDuration)
+                .reduce(Duration.ZERO, Duration::plus);
+
+        return start.plus(totalDuration);
+    }
+
 
     @Override
     public Session updateSession(Long id, Session session) {
@@ -89,9 +126,126 @@ public class SessionServiceImpl implements SessionService {
                 .flatMap(Optional::stream)
                 .toList();
 
-        session.getUsers().clear();
-        session.getUsers().addAll(usersToAdd);
+        addUsersToSession(session, usersToAdd);
+
+        handleSubsessions(session);
+    }
+
+    private void addUsersToSession(Session session, List<User> users) {
+        if(session.getUsers() == null) {
+            session.setUsers(new ArrayList<>(users));
+        } else {
+            session.getUsers().clear();
+            session.getUsers().addAll(users);
+        }
         sessionRepository.save(session);
+    }
+
+    private void handleSubsessions(Session session) {
+        switch (session.getProblemSolvingMethod().getTitle()) {
+            case "Brainstorming" -> {}
+            case "Brainwriting" -> handleBrainwritingSubsessions(session);
+            case "Nominal group technique" -> handleNominalGroupTechniqueSubsessions(session);
+            case "Speedstorming" -> handleSpeedstormingSubsessions(session);
+            default -> throw new IllegalStateException("Unexpected value: " + session.getDecisionMakingMethod().getTitle());
+        }
+    }
+
+    private void handleNominalGroupTechniqueSubsessions(Session session) {
+        for (User user : session.getUsers()) {
+            Session subsession = createSubSession(session);
+            addUsersToSession(subsession, List.of(user));
+        }
+
+        // TODO handle finished subsessions
+    }
+
+    private void handleSpeedstormingSubsessions(Session session) {
+
+        List<User> participants = session.getUsers();
+
+        Duration duration = getDurationFromStepTitle(session, "Rapid Pair Rotation");
+
+        Queue<Pair<User, User>> pairQueue = new LinkedList<>();
+
+        for (int i = 0; i < participants.size(); i++) {
+            for (int j = i + 1; j < participants.size(); j++) {
+                pairQueue.add(new Pair<>(participants.get(i), participants.get(j)));
+            }
+        }
+
+        int round = 0;
+        while (!pairQueue.isEmpty()) {
+            Pair<User, User> pair = pairQueue.poll();
+            assert duration != null;
+            int delay = round * (int) duration.toSeconds();
+
+            scheduler.schedule(() -> {
+                Session subsession = createSubSession(session); // implement this
+                addUsersToSession(subsession, List.of(pair.key(), pair.value()));
+                System.out.println("Created subsession for: " + pair.key().getName() + " & " + pair.value().getName());
+            }, delay, TimeUnit.SECONDS);
+
+            round++;
+        }
+    }
+
+    private void handleBrainwritingSubsessions(Session session) {
+
+        List<User> participants = session.getUsers();
+        List<Session> subsessions = new ArrayList<>();
+
+        Duration duration = getDurationFromStepTitle(session,"Document Rotation");
+
+        log.info("Got duration: {}", duration);
+
+        for (User user : participants) {
+            Session subsession = createSubSession(session);
+            subsessions.add(subsession);
+            addUsersToSession(subsession, List.of(user));
+        }
+
+        int totalRounds = participants.size() - 1;
+
+        for (int round = 1; round <= totalRounds; round++) {
+            int finalRound = round;
+            assert duration != null;
+            scheduler.schedule(() -> {
+                for (int i = 0; i < participants.size(); i++) {
+                    User user = participants.get(i);
+                    int targetIndex = (i + finalRound) % participants.size();
+                    Session targetSubsession = subsessions.get(targetIndex);
+                    synchronized (targetSubsession) {
+                        addUsersToSession(targetSubsession, List.of(user));
+                    }
+                }
+                System.out.println("Round " + finalRound + " completed.");
+            }, duration.toSeconds() * round, TimeUnit.SECONDS);
+        }
+    }
+
+
+    private Duration getDurationFromStepTitle(Session session, String stepTitle) {
+        return session.getProblemSolvingMethod()
+                .getMethodSteps().stream()
+                .filter(problemSolvingMethodStep ->
+                        problemSolvingMethodStep.getStep().getTitle().equals(stepTitle))
+                .findAny()
+                .map(
+                        ProblemSolvingMethodStep::getDuration
+                ).orElse(null);
+    }
+
+    private Session createSubSession(Session parentSession) {
+        log.info("creating new subsession for: {}", parentSession);
+        Session subSession = new Session();
+        subSession.setStart(parentSession.getStart());
+        subSession.setEnd(parentSession.getEnd());
+        subSession.setDecisionMakingMethod(parentSession.getDecisionMakingMethod());
+        subSession.setProblemSolvingMethod(parentSession.getProblemSolvingMethod());
+        subSession.setProblem(parentSession.getProblem());
+        subSession.setParentSession(parentSession);
+        return sessionRepository.save(subSession);
     }
 
 
@@ -107,7 +261,7 @@ public class SessionServiceImpl implements SessionService {
             case "Weighted average winner" -> getWeightedAverageWinnerFinalSolution(session).orElse(null);
             case "Borda ranking" -> getBordaRankingFinalSolution(session).orElse(null);
             case "Majority rule" -> getMajorityRuleFinalSolution(session).orElse(null);
-            default -> 5L;
+            default -> throw new IllegalStateException("Unexpected value: " + session.getDecisionMakingMethod().getTitle());
         };
     }
 

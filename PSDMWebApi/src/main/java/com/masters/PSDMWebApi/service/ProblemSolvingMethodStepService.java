@@ -1,5 +1,6 @@
 package com.masters.PSDMWebApi.service;
 
+import com.masters.PSDMWebApi.dto.StepDetailsDTO;
 import com.masters.PSDMWebApi.model.ProblemSolvingMethodStep;
 import com.masters.PSDMWebApi.model.id.ProblemSolvingMethodStepId;
 
@@ -16,4 +17,6 @@ public interface ProblemSolvingMethodStepService {
     ProblemSolvingMethodStep updateProblemSolvingMethodStep(ProblemSolvingMethodStepId id, ProblemSolvingMethodStep session);
 
     void deleteProblemSolvingMethodStep(ProblemSolvingMethodStepId id);
+
+    List<StepDetailsDTO> getStepDetails (List<ProblemSolvingMethodStep> methodSteps);
 }

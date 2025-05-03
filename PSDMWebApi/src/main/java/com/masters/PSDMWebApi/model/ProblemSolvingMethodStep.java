@@ -27,9 +27,6 @@ public class ProblemSolvingMethodStep {
     @Column(name = "ordinal", nullable = false)
     private Integer ordinal;
 
-    @Column(name = "repetitions", nullable = false)
-    private Integer repetitions;
-
     @Column(name = "duration", nullable = false)
     private Duration duration;
 }

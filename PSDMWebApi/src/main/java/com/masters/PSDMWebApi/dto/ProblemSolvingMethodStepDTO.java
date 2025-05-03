@@ -12,6 +12,5 @@ public class ProblemSolvingMethodStepDTO {
     private Long methodId;
     private Long stepId;
     private Integer ordinal;
-    private Integer repetitions;
     private Duration duration;
 }
