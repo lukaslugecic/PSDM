@@ -16,6 +16,9 @@ interface SolutionApiService {
     @GET("solution/session/{sessionId}")
     suspend fun getSolutionsBySessionId(@Path("sessionId") sessionId: Long) : List<SolutionResponse>
 
+    @GET("solution/session/parent/{sessionId}")
+    suspend fun getSolutionsByParentSessionIdOrSessionId(@Path("sessionId") sessionId: Long) : List<SolutionResponse>
+
     @POST("solution/group")
     suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : SolutionResponse
 }

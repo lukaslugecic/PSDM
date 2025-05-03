@@ -15,7 +15,6 @@ import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
 import com.example.psdmclientapp.model.DecisionMakingMethodResponse
 import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import kotlin.Long
 
 @HiltViewModel
@@ -55,23 +54,17 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
             isLoading = true
             errorMessage = null
 
-            val now = LocalDateTime.now().toString()
-
             val session = ApiClient.sessionApi.createProblemAndSession(
                 CreateProblemAndSessionRequest(
                     ProblemRequest(
                         title = title,
                         description = description,
-                        moderatorId = 1L, // Replace with dynamic moderator ID if needed
-                        start = now,
-                        end = now
+                        moderatorId = 1L,
                     ),
                     SessionRequest(
                         problemId = 1,
                         problemSolvingMethodId = selectedSolvingMethodId!!,
-                        decisionMakingMethodId = selectedDecisionMethodId!!,
-                        start = now,
-                        end = now
+                        decisionMakingMethodId = selectedDecisionMethodId!!
                     )
                 )
             )

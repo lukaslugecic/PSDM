@@ -15,5 +15,4 @@ data class ProblemSolvingSessionState(
     val isCurrentTurn: Boolean = false,
     val problemSolvingMethod: ProblemSolvingMethod = ProblemSolvingMethod.BRAINWRITING,
     val decisionMakingMethod: DecisionMakingMethod = DecisionMakingMethod.AVERAGE_WINNER
-
     )

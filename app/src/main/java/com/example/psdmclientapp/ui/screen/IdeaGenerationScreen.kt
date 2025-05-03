@@ -10,8 +10,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun IdeaGenerationScreen(
@@ -20,19 +23,34 @@ fun IdeaGenerationScreen(
     sessionId: Long,
     viewModel: IdeaGenerationViewModel = viewModel()
 ) {
-    rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
+    }
 
+    LaunchedEffect(viewModel.rotationDurationInSeconds) {
+        viewModel.rotationDurationInSeconds?.let { durationInSeconds ->
+            coroutineScope.launch {
+                delay(durationInSeconds * 1000 + 1000)
+                if (state.currentUserId != null) {
+                    val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
+                    navController.navigate("ideaGeneration/$problemId/$newSessionId")
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
         while (true) {
             delay(4000)
             viewModel.refreshSolutions()
         }
     }
+
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(state.problemTitle) }) }

@@ -17,6 +17,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
+import android.util.Log
+import java.time.Duration
 
 @HiltViewModel
 class IdeaGenerationViewModel @Inject constructor(
@@ -28,6 +30,9 @@ class IdeaGenerationViewModel @Inject constructor(
 
     var state by mutableStateOf(ProblemSolvingSessionState())
         private set
+
+    var rotationDurationInSeconds by mutableStateOf<Long?>(null)
+
 
     fun loadSession(sessionId: Long) {
         viewModelScope.launch {
@@ -49,6 +54,16 @@ class IdeaGenerationViewModel @Inject constructor(
 
                 val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
                 val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1
+
+                val steps = sessionDetails.body()?.steps
+                val documentRotationStep = steps?.find { it.title == "Document Rotation"}
+
+                rotationDurationInSeconds = try {
+                    documentRotationStep?.duration?.let { Duration.parse(it).seconds }
+                } catch (e: Exception) {
+                    Log.e("ParseDuration", "Invalid duration format: ${documentRotationStep?.duration}", e)
+                    null
+                }
 
                 state = state.copy(
                     problemTitle = sessionDetails.body()?.problem?.title.toString(),
