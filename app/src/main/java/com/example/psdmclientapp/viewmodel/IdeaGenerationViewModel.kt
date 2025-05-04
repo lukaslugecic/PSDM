@@ -19,6 +19,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import android.util.Log
 import com.example.psdmclientapp.model.StepDetailsResponse
+import com.example.psdmclientapp.model.request.AttributeRequest
 import java.time.Duration
 
 @HiltViewModel
@@ -130,7 +131,6 @@ class IdeaGenerationViewModel @Inject constructor(
                 val newSolution = ApiClient.solutionApi.submitSolution(
                     SolutionRequest(
                         text,
-                        text,
                         state.currentUserId,
                         problemId,
                         sessionId
@@ -144,6 +144,34 @@ class IdeaGenerationViewModel @Inject constructor(
             }
         }
     }
+
+    fun submitSolutionWithAttributes(title: String, attributes: List<Pair<String, String>>) {
+        viewModelScope.launch {
+            try {
+                val attributeRequests = attributes.map { (key, value) ->
+                    AttributeRequest(title = key, value = value)
+                }
+
+                println("")
+
+                val newSolution = ApiClient.solutionApi.submitSolution(
+                    SolutionRequest(
+                        title = title,
+                        userId = state.currentUserId,
+                        problemId = problemId,
+                        sessionId = sessionId,
+                        attributes = attributeRequests
+                    )
+                )
+                state = state.copy(
+                    solutions = state.solutions + newSolution
+                )
+            } catch (e: Exception) {
+                state = state.copy(errorMessage = e.localizedMessage)
+            }
+        }
+    }
+
 
     fun endProblemSolving() {
         viewModelScope.launch {
@@ -169,7 +197,6 @@ class IdeaGenerationViewModel @Inject constructor(
                         solutionIds,
                         SolutionRequest(
                             title = newTitle,
-                            description = combinedText,
                             userId = state.currentUserId,
                             problemId = problemId,
                             sessionId = sessionId
@@ -210,7 +237,6 @@ class IdeaGenerationViewModel @Inject constructor(
             try {
                 val newSolution = ApiClient.solutionApi.submitSolution(
                     SolutionRequest(
-                        title,
                         title,
                         state.currentUserId,
                         problemId,

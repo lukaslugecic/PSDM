@@ -8,5 +8,6 @@ data class SolutionResponse (
     val problemId: Long,
     val sessionId: Long,
     val createdTime: String,
-    val chosen: Boolean
+    val chosen: Boolean,
+    val attributes: List<AttributeResponse> = emptyList()
 )

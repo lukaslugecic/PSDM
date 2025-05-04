@@ -1,8 +1,11 @@
 package com.example.psdmclientapp.ui.screen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +18,7 @@ import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("MutableCollectionMutableState")
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun IdeaGenerationScreen(
@@ -27,6 +31,7 @@ fun IdeaGenerationScreen(
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
+    var attributeInputs by remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
@@ -103,29 +108,71 @@ fun IdeaGenerationScreen(
                                 shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.padding(horizontal = 8.dp)
                             ) {
-                                Text(
-                                    text = idea.title,
-                                    modifier = Modifier.padding(8.dp),
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
+                                Column(modifier = Modifier.padding(8.dp)) {
+                                    Text(
+                                        text = idea.title,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onPrimary
+                                    )
+
+                                    idea.attributes.forEach { attr ->
+                                        Text(
+                                            text = "${attr.title}: ${attr.value}",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
+
 
                 HorizontalDivider()
 
                 OutlinedTextField(
                     value = ideaInput,
                     onValueChange = { ideaInput = it },
-                    label = { Text("Unesi ideju") },
+                    label = { Text("Naslov ideje") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
+                Text("Atributi:", style = MaterialTheme.typography.labelLarge)
+
+                attributeInputs.forEachIndexed { index, (title, value) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { newTitle -> attributeInputs[index] = newTitle to value },
+                            label = { Text("Naziv") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        OutlinedTextField(
+                            value = value,
+                            onValueChange = { newValue -> attributeInputs[index] = title to newValue },
+                            label = { Text("Vrednost") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { attributeInputs.removeAt(index) }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Ukloni")
+                        }
+                    }
+                }
+
+                Button(
+                    onClick = { attributeInputs.add("" to "") },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Dodaj atribut")
+                }
+
                 Button(
                     onClick = {
-                        viewModel.submitSolution(ideaInput)
+                        viewModel.submitSolutionWithAttributes(ideaInput, attributeInputs)
                         ideaInput = ""
+                        attributeInputs.clear()
                     },
                     enabled = ideaInput.isNotBlank()
                 ) {
