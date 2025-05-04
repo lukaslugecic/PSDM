@@ -56,7 +56,8 @@ public class SessionServiceImpl implements SessionService {
                                 SessionMapper.toDTO(session),
                                 methodStepService.getStepDetails(
                                         session.getProblemSolvingMethod().getMethodSteps()
-                                )
+                                ),
+                                session.getParentSession() != null
                         );
                         return Optional.of(detailsDTO);
                 });

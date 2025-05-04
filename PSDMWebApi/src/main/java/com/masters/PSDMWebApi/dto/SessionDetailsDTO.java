@@ -11,4 +11,5 @@ public class SessionDetailsDTO {
     private ProblemDTO problem;
     private SessionDTO session;
     private List<StepDetailsDTO> steps;
+    private Boolean isSubSession;
 }
