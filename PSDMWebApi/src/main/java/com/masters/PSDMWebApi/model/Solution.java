@@ -22,9 +22,6 @@ public class Solution {
     @Column(name = "solution_title", nullable = false)
     private String title;
 
-    @Column(name = "solution_description", nullable = false)
-    private String description;
-
     @Column(name = "created_time", nullable = false)
     private LocalDateTime createdTime;
 
@@ -46,7 +43,7 @@ public class Solution {
     @JoinColumn(name = "session_id")
     private Session session;
 
-    @OneToMany(mappedBy = "solution")
+    @OneToMany(mappedBy = "solution", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Attribute> attributes;
 
     @OneToMany(mappedBy = "solution")

@@ -2,6 +2,7 @@ package com.masters.PSDMWebApi.mapper;
 
 
 import com.masters.PSDMWebApi.dto.AttributeDTO;
+import com.masters.PSDMWebApi.dto.request.AttributeRequestDTO;
 import com.masters.PSDMWebApi.model.Attribute;
 import com.masters.PSDMWebApi.model.Solution;
 
@@ -14,6 +15,7 @@ public class AttributeMapper {
         dto.setId(attribute.getId());
         dto.setSolutionId(attribute.getSolution().getId());
         dto.setTitle(attribute.getTitle());
+        dto.setValue(attribute.getValue());
         return dto;
     }
 
@@ -24,6 +26,16 @@ public class AttributeMapper {
         entity.setId(dto.getId());
         entity.setSolution(new Solution(dto.getSolutionId()));
         entity.setTitle(dto.getTitle());
+        entity.setValue(dto.getValue());
+        return entity;
+    }
+
+    public static Attribute toEntity(AttributeRequestDTO dto) {
+        if (dto == null) return null;
+
+        Attribute entity = new Attribute();
+        entity.setTitle(dto.getTitle());
+        entity.setValue(dto.getValue());
         return entity;
     }
 }

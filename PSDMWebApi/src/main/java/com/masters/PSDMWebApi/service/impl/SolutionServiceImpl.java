@@ -6,6 +6,7 @@ import com.masters.PSDMWebApi.model.Solution;
 import com.masters.PSDMWebApi.repository.SolutionRepository;
 import com.masters.PSDMWebApi.service.SolutionService;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class SolutionServiceImpl implements SolutionService {
 
     private final SolutionRepository solutionRepository;
@@ -33,6 +35,7 @@ public class SolutionServiceImpl implements SolutionService {
 
     @Override
     public Solution createSolution(Solution solution) {
+        log.info("Saving solution with title: {}", solution.getTitle());
         return solutionRepository.save(solution);
     }
 
