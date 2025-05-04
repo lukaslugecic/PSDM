@@ -32,10 +32,20 @@ fun IdeaGenerationScreen(
         viewModel.loadSession(sessionId)
     }
 
+    LaunchedEffect(viewModel.shouldRedirectToSubsession) {
+        if (viewModel.shouldRedirectToSubsession && state.currentUserId != null) {
+            val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
+            navController.navigate("ideaGeneration/$problemId/$newSessionId") {
+                popUpTo("ideaGeneration/$problemId/$sessionId") { inclusive = true }
+            }
+        }
+    }
+
+
     LaunchedEffect(viewModel.rotationDurationInSeconds) {
         viewModel.rotationDurationInSeconds?.let { durationInSeconds ->
             coroutineScope.launch {
-                delay(durationInSeconds * 1000 + 1000)
+                delay(durationInSeconds * 1000)
                 if (state.currentUserId != null) {
                     val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
                     navController.navigate("ideaGeneration/$problemId/$newSessionId")

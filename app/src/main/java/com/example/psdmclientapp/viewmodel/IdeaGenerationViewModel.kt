@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 import android.util.Log
+import com.example.psdmclientapp.model.StepDetailsResponse
 import java.time.Duration
 
 @HiltViewModel
@@ -29,6 +30,9 @@ class IdeaGenerationViewModel @Inject constructor(
     private val problemId: Long = checkNotNull(savedStateHandle["problemId"])
 
     var state by mutableStateOf(ProblemSolvingSessionState())
+        private set
+
+    var shouldRedirectToSubsession by mutableStateOf(false)
         private set
 
     var rotationDurationInSeconds by mutableStateOf<Long?>(null)
@@ -55,15 +59,6 @@ class IdeaGenerationViewModel @Inject constructor(
                 val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
                 val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1
 
-                val steps = sessionDetails.body()?.steps
-                val documentRotationStep = steps?.find { it.title == "Document Rotation"}
-
-                rotationDurationInSeconds = try {
-                    documentRotationStep?.duration?.let { Duration.parse(it).seconds }
-                } catch (e: Exception) {
-                    Log.e("ParseDuration", "Invalid duration format: ${documentRotationStep?.duration}", e)
-                    null
-                }
 
                 state = state.copy(
                     problemTitle = sessionDetails.body()?.problem?.title.toString(),
@@ -76,6 +71,40 @@ class IdeaGenerationViewModel @Inject constructor(
                     decisionMakingMethod = DecisionMakingMethod.fromId(decisionMakingMethodId) ?: DecisionMakingMethod.AVERAGE_WINNER
                 )
 
+
+                val steps = sessionDetails.body()?.steps
+
+                var documentRotationStep: StepDetailsResponse? = null
+
+                when(state.problemSolvingMethod){
+                    ProblemSolvingMethod.BRAINSTORMING -> {
+
+                    }
+                    ProblemSolvingMethod.BRAINWRITING -> {
+                        documentRotationStep = steps?.find { it.title == "Document Rotation"}
+                    }
+                    ProblemSolvingMethod.SPEEDSTORMING -> {
+                        documentRotationStep = steps?.find { it.title == "Rapid Pair Rotation"}
+                    }
+                    ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> {
+
+                    }
+                }
+
+                rotationDurationInSeconds = try {
+                    documentRotationStep?.duration?.let { Duration.parse(it).seconds }
+                } catch (e: Exception) {
+                    Log.e("ParseDuration", "Invalid duration format: ${documentRotationStep?.duration}", e)
+                    null
+                }
+
+                if ((state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
+                            state.problemSolvingMethod == ProblemSolvingMethod.SPEEDSTORMING) &&
+                    sessionDetails.body()?.isSubSession == false) {
+                    shouldRedirectToSubsession = true
+                }
+
+
             } catch (e: Exception) {
                 state = state.copy(
                     errorMessage = e.localizedMessage,
@@ -84,7 +113,6 @@ class IdeaGenerationViewModel @Inject constructor(
             }
         }
     }
-
     fun refreshSolutions() {
         viewModelScope.launch {
             try {
