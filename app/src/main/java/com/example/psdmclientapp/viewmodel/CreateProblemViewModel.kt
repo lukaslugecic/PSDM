@@ -1,6 +1,7 @@
 package com.example.psdmclientapp.viewmodel
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -28,6 +29,8 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
 
     var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodResponse>>(emptyList())
     var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodResponse>>(emptyList())
+
+    val attributeTitles = mutableStateListOf<String>()
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)

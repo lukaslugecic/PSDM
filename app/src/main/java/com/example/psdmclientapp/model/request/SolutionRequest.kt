@@ -5,5 +5,5 @@ data class SolutionRequest (
     val userId: Long?,
     val problemId: Long,
     val sessionId: Long,
-    val attributes: List<AttributeRequest> = emptyList()
+    val attributes: List<AttributeRequest>? = null
 )

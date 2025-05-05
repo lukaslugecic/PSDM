@@ -1,6 +1,5 @@
 package com.example.psdmclientapp.ui.screen
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,21 +16,25 @@ import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
-@SuppressLint("MutableCollectionMutableState")
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun IdeaGenerationScreen(
     navController: NavHostController,
     problemId: Long,
     sessionId: Long,
+    attributeTitles: List<String>,
     viewModel: IdeaGenerationViewModel = viewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
-    var attributeInputs by remember { mutableStateOf(mutableListOf<Pair<String, String>>()) }
+    var attributeInputs by remember { mutableStateOf(listOf<Pair<String, String>>()) }
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
@@ -39,9 +42,13 @@ fun IdeaGenerationScreen(
 
     LaunchedEffect(viewModel.shouldRedirectToSubsession) {
         if (viewModel.shouldRedirectToSubsession && state.currentUserId != null) {
+            val json = Json.encodeToString(attributeTitles)
+            val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+
             val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
-            navController.navigate("ideaGeneration/$problemId/$newSessionId") {
-                popUpTo("ideaGeneration/$problemId/$sessionId") { inclusive = true }
+
+            navController.navigate("ideaGeneration/$problemId/$newSessionId/$encodedAttributes") {
+                popUpTo("ideaGeneration/$problemId/$sessionId/$encodedAttributes") { inclusive = true }
             }
         }
     }
@@ -52,8 +59,12 @@ fun IdeaGenerationScreen(
             coroutineScope.launch {
                 delay(durationInSeconds * 1000)
                 if (state.currentUserId != null) {
+                    val json = Json.encodeToString(attributeTitles)
+                    val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+
                     val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
-                    navController.navigate("ideaGeneration/$problemId/$newSessionId")
+
+                    navController.navigate("ideaGeneration/$problemId/$newSessionId/$attributeTitles/$encodedAttributes")
                 }
             }
         }
@@ -144,25 +155,37 @@ fun IdeaGenerationScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
                             value = title,
-                            onValueChange = { newTitle -> attributeInputs[index] = newTitle to value },
+                            onValueChange = { newTitle -> {
+                                attributeInputs = attributeInputs.toMutableList().also {
+                                    it[index] = newTitle to value
+                                }
+                            } },
                             label = { Text("Naziv") },
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         OutlinedTextField(
                             value = value,
-                            onValueChange = { newValue -> attributeInputs[index] = title to newValue },
+                            onValueChange = { newValue -> {
+                                attributeInputs = attributeInputs.toMutableList().also {
+                                    it[index] = title to newValue
+                                }
+                            } },
                             label = { Text("Vrednost") },
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(onClick = { attributeInputs.removeAt(index) }) {
+                        IconButton(onClick = {
+                            if (index in attributeInputs.indices) {
+                                attributeInputs = attributeInputs.toMutableList().also { it.removeAt(index) }
+                            }
+                        }) {
                             Icon(Icons.Default.Delete, contentDescription = "Ukloni")
                         }
                     }
                 }
 
                 Button(
-                    onClick = { attributeInputs.add("" to "") },
+                    onClick = {attributeInputs = attributeInputs + ("" to "") },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text("Dodaj atribut")
@@ -172,7 +195,7 @@ fun IdeaGenerationScreen(
                     onClick = {
                         viewModel.submitSolutionWithAttributes(ideaInput, attributeInputs)
                         ideaInput = ""
-                        attributeInputs.clear()
+                        attributeInputs = emptyList()
                     },
                     enabled = ideaInput.isNotBlank()
                 ) {

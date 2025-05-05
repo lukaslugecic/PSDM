@@ -125,32 +125,12 @@ class IdeaGenerationViewModel @Inject constructor(
         }
     }
 
-    fun submitSolution(text: String) {
-        viewModelScope.launch {
-            try {
-                val newSolution = ApiClient.solutionApi.submitSolution(
-                    SolutionRequest(
-                        text,
-                        state.currentUserId,
-                        problemId,
-                        sessionId
-                    )
-                )
-                state = state.copy(
-                    solutions = state.solutions + newSolution
-                )
-            } catch (e: Exception) {
-                state = state.copy(errorMessage = e.localizedMessage)
-            }
-        }
-    }
-
     fun submitSolutionWithAttributes(title: String, attributes: List<Pair<String, String>>) {
         viewModelScope.launch {
             try {
-                val attributeRequests = attributes.map { (key, value) ->
-                    AttributeRequest(title = key, value = value)
-                }
+                val attributeRequests = attributes
+                    .filter { it.first.isNotBlank() && it.second.isNotBlank() }
+                    .map { (key, value) -> AttributeRequest(title = key, value = value) }
 
                 println("")
 
@@ -188,10 +168,6 @@ class IdeaGenerationViewModel @Inject constructor(
         println("submit")
         viewModelScope.launch {
             try {
-                val combinedText = state.solutions
-                    .filter { solutionIds.contains(it.id) }
-                    .joinToString(separator = "\n") { "- ${it.title}" }
-
                 val newSolution = ApiClient.solutionApi.groupSolutions(
                     GroupSolutionRequest(
                         solutionIds,

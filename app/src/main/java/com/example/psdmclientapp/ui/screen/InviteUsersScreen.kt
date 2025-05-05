@@ -10,6 +10,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,6 +21,7 @@ fun InviteUsersScreen(
     navController: NavHostController,
     problemId: Long,
     sessionId: Long,
+    attributeTitles: List<String>,
     viewModel: InviteUsersViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -71,7 +76,11 @@ fun InviteUsersScreen(
                         viewModel.sendInvites(sessionId)
                         if (viewModel.errorMessage == null) {
                            // navController.navigate("sessionLobby/$sessionId")
-                            navController.navigate("ideaGeneration/$problemId/$sessionId")
+
+                            val json = Json.encodeToString(attributeTitles)
+                            val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+
+                            navController.navigate("ideaGeneration/$problemId/$sessionId/$encodedAttributes")
                         }
                     }
                 },

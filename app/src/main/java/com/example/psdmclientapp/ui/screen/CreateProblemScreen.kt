@@ -17,6 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import kotlinx.serialization.encodeToString
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -113,12 +117,43 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
                 }
             )
 
+            HorizontalDivider()
+
+            Text("Attributes", style = MaterialTheme.typography.titleMedium)
+
+            viewModel.attributeTitles.forEachIndexed { index, title ->
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { newTitle ->
+                        viewModel.attributeTitles[index] = newTitle
+                    },
+                    label = { Text("Attribute ${index + 1}") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { viewModel.attributeTitles.add("") }) {
+                    Text("Add Attribute")
+                }
+                if (viewModel.attributeTitles.isNotEmpty()) {
+                    Button(
+                        onClick = { viewModel.attributeTitles.removeAt(viewModel.attributeTitles.lastIndex) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) {
+                        Text("Remove Last")
+                    }
+                }
+            }
+
 
             Button(
                 onClick = {
                     coroutineScope.launch {
                         viewModel.submit { session ->
-                            navController.navigate("inviteUsers/${session.problemId}/${session.id}")
+                            val json = Json.encodeToString(viewModel.attributeTitles.toList())
+                            val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+                            navController.navigate("inviteUsers/${session.problemId}/${session.id}/$encodedAttributes")
                         }
                     }
                 },
