@@ -3,8 +3,6 @@ package com.example.psdmclientapp.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,7 +32,11 @@ fun IdeaGenerationScreen(
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
-    var attributeInputs by remember { mutableStateOf(listOf<Pair<String, String>>()) }
+
+    var attributeInputs by remember {
+        mutableStateOf(attributeTitles.associateWith { "" })
+    }
+
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
@@ -151,38 +153,19 @@ fun IdeaGenerationScreen(
 
                 Text("Atributi:", style = MaterialTheme.typography.labelLarge)
 
-                attributeInputs.forEachIndexed { index, (title, value) ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { newTitle -> {
-                                attributeInputs = attributeInputs.toMutableList().also {
-                                    it[index] = newTitle to value
-                                }
-                            } },
-                            label = { Text("Naziv") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        OutlinedTextField(
-                            value = value,
-                            onValueChange = { newValue -> {
-                                attributeInputs = attributeInputs.toMutableList().also {
-                                    it[index] = title to newValue
-                                }
-                            } },
-                            label = { Text("Vrednost") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = {
-                            if (index in attributeInputs.indices) {
-                                attributeInputs = attributeInputs.toMutableList().also { it.removeAt(index) }
+                attributeTitles.forEach { title ->
+                    OutlinedTextField(
+                        value = attributeInputs[title] ?: "",
+                        onValueChange = { newValue ->
+                            attributeInputs = attributeInputs.toMutableMap().also {
+                                it[title] = newValue
                             }
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Ukloni")
-                        }
-                    }
+                        },
+                        label = { Text(title) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
+
 
                 Button(
                     onClick = {attributeInputs = attributeInputs + ("" to "") },
@@ -193,9 +176,12 @@ fun IdeaGenerationScreen(
 
                 Button(
                     onClick = {
-                        viewModel.submitSolutionWithAttributes(ideaInput, attributeInputs)
+                        viewModel.submitSolutionWithAttributes(
+                            ideaInput,
+                            attributeInputs.map { (title, value) -> title to value }
+                        )
                         ideaInput = ""
-                        attributeInputs = emptyList()
+                        attributeInputs = attributeTitles.associateWith { "" }
                     },
                     enabled = ideaInput.isNotBlank()
                 ) {
