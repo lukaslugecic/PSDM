@@ -48,11 +48,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long getCurrentSubsessionId(Long userId) {
+    public Long getCurrentSessionId(Long userId, boolean isSubSession) {
         return userRepository.findById(userId)
                 .map(User::getSessions)
                 .flatMap(sessions -> sessions.stream()
-                        .filter(session -> session.getParentSession() != null)
+                        .filter(session -> isSubSession == (session.getParentSession() != null))
                         .filter(session -> session.getStart().isBefore(LocalDateTime.now())
                                 && session.getEnd().isAfter(LocalDateTime.now())
                         )

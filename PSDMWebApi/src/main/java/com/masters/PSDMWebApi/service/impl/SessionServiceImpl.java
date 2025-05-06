@@ -57,7 +57,8 @@ public class SessionServiceImpl implements SessionService {
                                 methodStepService.getStepDetails(
                                         session.getProblemSolvingMethod().getMethodSteps()
                                 ),
-                                session.getParentSession() != null
+                                session.getParentSession() != null,
+                                1L // TODO calculate duration of
                         );
                         return Optional.of(detailsDTO);
                 });
@@ -153,8 +154,14 @@ public class SessionServiceImpl implements SessionService {
     }
 
     private void handleNominalGroupTechniqueSubsessions(Session session) {
+
+        Long duration = getDurationInSecondsFromStepTitle(session, "Individual Idea Generation");
+
+
+
+
         for (User user : session.getUsers()) {
-            Session subsession = createSubSession(session);
+            Session subsession = createSubSession(session, 1L); // TODO KAJ AK MI NE TREBA DURATION KAO OVDJE?
             addUsersToSession(subsession, List.of(user));
         }
 
@@ -165,7 +172,7 @@ public class SessionServiceImpl implements SessionService {
 
         List<User> participants = session.getUsers();
 
-        Duration duration = getDurationFromStepTitle(session, "Rapid Pair Rotation");
+        Long duration = getDurationInSecondsFromStepTitle(session, "Rapid Pair Rotation");
 
         Queue<Pair<User, User>> pairQueue = new LinkedList<>();
 
@@ -179,10 +186,10 @@ public class SessionServiceImpl implements SessionService {
         while (!pairQueue.isEmpty()) {
             Pair<User, User> pair = pairQueue.poll();
             assert duration != null;
-            int delay = round * (int) duration.toSeconds();
+            long delay = round * duration;
 
             scheduler.schedule(() -> {
-                Session subsession = createSubSession(session); // implement this
+                Session subsession = createSubSession(session, 1L); // implement this   // TODO duration
                 addUsersToSession(subsession, List.of(pair.key(), pair.value()));
                 System.out.println("Created subsession for: " + pair.key().getName() + " & " + pair.value().getName());
             }, delay, TimeUnit.SECONDS);
@@ -196,21 +203,24 @@ public class SessionServiceImpl implements SessionService {
         List<User> participants = session.getUsers();
         List<Session> subsessions = new ArrayList<>();
 
-        Duration duration = getDurationFromStepTitle(session,"Document Rotation");
+        Long duration = getDurationInSecondsFromStepTitle(session,"Document Rotation");
 
         log.info("Got duration: {}", duration);
 
+        long durationToAdd = duration;
         for (User user : participants) {
-            Session subsession = createSubSession(session);
+            Session subsession = createSubSession(session, durationToAdd++);
             subsessions.add(subsession);
             addUsersToSession(subsession, List.of(user));
         }
+
+        // TODO postaviti startTime subsessionu pa cu moc racunati duration kao END-START
+
 
         int totalRounds = participants.size() - 1;
 
         for (int round = 1; round <= totalRounds; round++) {
             int finalRound = round;
-            assert duration != null;
             scheduler.schedule(() -> {
                 for (int i = 0; i < participants.size(); i++) {
                     User user = participants.get(i);
@@ -221,12 +231,12 @@ public class SessionServiceImpl implements SessionService {
                     }
                 }
                 System.out.println("Round " + finalRound + " completed.");
-            }, duration.toSeconds() * round, TimeUnit.SECONDS);
+            }, duration * round, TimeUnit.SECONDS);
         }
     }
 
 
-    private Duration getDurationFromStepTitle(Session session, String stepTitle) {
+    private Long getDurationInSecondsFromStepTitle(Session session, String stepTitle) {
         return session.getProblemSolvingMethod()
                 .getMethodSteps().stream()
                 .filter(problemSolvingMethodStep ->
@@ -234,14 +244,16 @@ public class SessionServiceImpl implements SessionService {
                 .findAny()
                 .map(
                         ProblemSolvingMethodStep::getDuration
-                ).orElse(null);
+                )
+                .map(Duration::toSeconds)
+                .orElse(null);
     }
 
-    private Session createSubSession(Session parentSession) {
+    private Session createSubSession(Session parentSession, Long duration) {
         log.info("creating new subsession for: {}", parentSession);
         Session subSession = new Session();
         subSession.setStart(parentSession.getStart());
-        subSession.setEnd(parentSession.getEnd());
+        subSession.setEnd(parentSession.getStart().plusSeconds(duration));
         subSession.setDecisionMakingMethod(parentSession.getDecisionMakingMethod());
         subSession.setProblemSolvingMethod(parentSession.getProblemSolvingMethod());
         subSession.setProblem(parentSession.getProblem());

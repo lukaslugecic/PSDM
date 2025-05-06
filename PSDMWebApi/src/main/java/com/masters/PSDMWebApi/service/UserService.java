@@ -15,5 +15,5 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    Long getCurrentSubsessionId(Long userId);
+    Long getCurrentSessionId(Long userId, boolean isSubSession);
 }

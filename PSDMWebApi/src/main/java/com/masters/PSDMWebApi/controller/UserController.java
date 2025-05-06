@@ -38,10 +38,14 @@ public class UserController {
 
     @GetMapping("/currentSubSession/{id}")
     public ResponseEntity<Long> getCurrentSubSession(@PathVariable Long id) {
-        Long res = userService.getCurrentSubsessionId(id);
-        log.debug("Request to getCurrentSubSession: {}", res );
+        Long res = userService.getCurrentSessionId(id, true);
         return ResponseEntity.ok(res);
+    }
 
+    @GetMapping("/currentParentSession/{id}")
+    public ResponseEntity<Long> getCurrentParentSession(@PathVariable Long id) {
+        Long res = userService.getCurrentSessionId(id, false);
+        return ResponseEntity.ok(res);
     }
 
     @PostMapping

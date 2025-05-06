@@ -12,4 +12,5 @@ public class SessionDetailsDTO {
     private SessionDTO session;
     private List<StepDetailsDTO> steps;
     private Boolean isSubSession;
+    private Long duration;
 }
