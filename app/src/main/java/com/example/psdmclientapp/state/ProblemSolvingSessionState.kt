@@ -9,6 +9,7 @@ data class ProblemSolvingSessionState(
     val problemDescription: String = "",
     val solutions: List<SolutionResponse> = emptyList(),
     val isOwner: Boolean = false,
+    val isSubSession : Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val currentUserId: Long? = null,

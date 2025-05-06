@@ -3,6 +3,8 @@ package com.example.psdmclientapp.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +39,7 @@ fun IdeaGenerationScreen(
         mutableStateOf(attributeTitles.associateWith { "" })
     }
 
+    var showInputs by remember { mutableStateOf(true) }
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
@@ -64,9 +67,22 @@ fun IdeaGenerationScreen(
                     val json = Json.encodeToString(attributeTitles)
                     val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
 
-                    val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
+                    if(viewModel.state.isSubSession) {
+                        val newSessionId = runCatching {
+                            ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
+                        }.getOrNull()
 
-                    navController.navigate("ideaGeneration/$problemId/$newSessionId/$attributeTitles/$encodedAttributes")
+                        if(newSessionId != null) {
+                            navController.navigate("ideaGeneration/$problemId/$newSessionId/$encodedAttributes")
+                        } else {
+                            val parentSessionId = runCatching {
+                                ApiClient.userApi.getCurrentParentSessionId(state.currentUserId)
+                            }.getOrNull()
+                            navController.navigate(viewModel.nextPage + "/$problemId/$parentSessionId/$encodedAttributes")
+                        }
+                    }
+
+                    navController.navigate(viewModel.nextPage + "/$problemId/$sessionId/$encodedAttributes")
                 }
             }
         }
@@ -144,88 +160,59 @@ fun IdeaGenerationScreen(
 
                 HorizontalDivider()
 
-                OutlinedTextField(
-                    value = ideaInput,
-                    onValueChange = { ideaInput = it },
-                    label = { Text("Naslov ideje") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Text("Atributi:", style = MaterialTheme.typography.labelLarge)
-
-                attributeTitles.forEach { title ->
-                    OutlinedTextField(
-                        value = attributeInputs[title] ?: "",
-                        onValueChange = { newValue ->
-                            attributeInputs = attributeInputs.toMutableMap().also {
-                                it[title] = newValue
-                            }
-                        },
-                        label = { Text(title) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-
-
                 Button(
-                    onClick = {attributeInputs = attributeInputs + ("" to "") },
+                    onClick = { showInputs = !showInputs },
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text("Dodaj atribut")
+                    Text(if (showInputs) "Sakrij unos" else "Dodaj ideju")
                 }
+                if(showInputs) {
+                    OutlinedTextField(
+                        value = ideaInput,
+                        onValueChange = { ideaInput = it },
+                        label = { Text("Naslov ideje") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-                Button(
-                    onClick = {
-                        viewModel.submitSolutionWithAttributes(
-                            ideaInput,
-                            attributeInputs.map { (title, value) -> title to value }
-                        )
-                        ideaInput = ""
-                        attributeInputs = attributeTitles.associateWith { "" }
-                    },
-                    enabled = ideaInput.isNotBlank()
-                ) {
-                    Text("Pošalji ideju")
-                }
+                    Text("Atributi:", style = MaterialTheme.typography.labelLarge)
 
-                if (state.isOwner) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        attributeTitles.forEach { title ->
+                            OutlinedTextField(
+                                value = attributeInputs[title] ?: "",
+                                onValueChange = { newValue ->
+                                    attributeInputs = attributeInputs.toMutableMap().also {
+                                        it[title] = newValue
+                                    }
+                                },
+                                label = { Text(title) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            )
+                        }
+                    }
+
                     Button(
                         onClick = {
-                            viewModel.endProblemSolving()
-                            navController.navigate("decisionPhase/${sessionId}")
+                            viewModel.submitSolutionWithAttributes(
+                                ideaInput,
+                                attributeInputs.map { (title, value) -> title to value }
+                            )
+                            ideaInput = ""
+                            attributeInputs = attributeTitles.associateWith { "" }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        enabled = ideaInput.isNotBlank()
                     ) {
-                        Text("Završi brainstorming")
+                        Text("Pošalji ideju")
                     }
                 }
 
-                Button(
-                    onClick = {
-                        navController.navigate("groupIdeas/${problemId}/${sessionId}")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    Text("Grupiraj ideje")
-                }
 
-                Button(
-                    onClick = {
-                        navController.navigate("nominalGroup/${problemId}/${sessionId}")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    Text("Nominalna grupa")
-                }
-
-                Button(
-                    onClick = {
-                        navController.navigate("voting/${problemId}/${sessionId}")
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                ) {
-                    Text("Glasanje")
-                }
 
 
                 state.errorMessage?.let {

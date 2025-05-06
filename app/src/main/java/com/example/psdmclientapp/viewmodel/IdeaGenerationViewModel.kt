@@ -37,7 +37,10 @@ class IdeaGenerationViewModel @Inject constructor(
         private set
 
     var rotationDurationInSeconds by mutableStateOf<Long?>(null)
+        private set
 
+    var nextPage by mutableStateOf<String>("")
+        private set
 
     fun loadSession(sessionId: Long) {
         viewModelScope.launch {
@@ -66,6 +69,7 @@ class IdeaGenerationViewModel @Inject constructor(
                     problemDescription = sessionDetails.body()?.problem?.description.toString(),
                     solutions = solutions,
                     isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
+                    isSubSession = sessionDetails.body()?.isSubSession == true,
                     currentUserId = currentUser.id,
                     isLoading = false,
                     problemSolvingMethod = ProblemSolvingMethod.fromId(problemSolvingMethodId) ?: ProblemSolvingMethod.BRAINSTORMING,
@@ -79,16 +83,18 @@ class IdeaGenerationViewModel @Inject constructor(
 
                 when(state.problemSolvingMethod){
                     ProblemSolvingMethod.BRAINSTORMING -> {
-
+                        nextPage = "group"
                     }
                     ProblemSolvingMethod.BRAINWRITING -> {
+                        nextPage = "voting"
                         documentRotationStep = steps?.find { it.title == "Document Rotation"}
                     }
                     ProblemSolvingMethod.SPEEDSTORMING -> {
+                        nextPage = "voting"
                         documentRotationStep = steps?.find { it.title == "Rapid Pair Rotation"}
                     }
                     ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> {
-
+                        nextPage = "nominal"
                     }
                 }
 
@@ -101,7 +107,7 @@ class IdeaGenerationViewModel @Inject constructor(
 
                 if ((state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
                             state.problemSolvingMethod == ProblemSolvingMethod.SPEEDSTORMING) &&
-                    sessionDetails.body()?.isSubSession == false) {
+                    state.isSubSession == false) {
                     shouldRedirectToSubsession = true
                 }
 
