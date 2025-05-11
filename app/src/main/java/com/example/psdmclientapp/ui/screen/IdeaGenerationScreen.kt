@@ -14,6 +14,7 @@ import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
+import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel.NavigationCommand
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -41,52 +42,31 @@ fun IdeaGenerationScreen(
 
     var showInputs by remember { mutableStateOf(true) }
 
-    LaunchedEffect(sessionId) {
-        viewModel.loadSession(sessionId)
+
+    val navCommand = viewModel.navigationCommand
+
+    LaunchedEffect(navCommand) {
+        navCommand?.let {
+            navController.navigate(it.route)
+            viewModel.navigationCommand = null // reset so it doesn't fire again
+        }
     }
 
-    LaunchedEffect(viewModel.shouldRedirectToSubsession) {
-        if (viewModel.shouldRedirectToSubsession && state.currentUserId != null) {
+    LaunchedEffect(sessionId) {
+        val shouldRedirect = viewModel.loadSession(sessionId)
+
+        if (shouldRedirect && viewModel.state.currentUserId != null) {
             val json = Json.encodeToString(attributeTitles)
             val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+            val newSessionId = ApiClient.userApi.getCurrentSubSessionId(viewModel.state.currentUserId!!)
 
-            val newSessionId = ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
-
-            navController.navigate("ideaGeneration/$problemId/$newSessionId/$encodedAttributes") {
-                popUpTo("ideaGeneration/$problemId/$sessionId/$encodedAttributes") { inclusive = true }
-            }
+            val route = "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
+            viewModel.navigationCommand = NavigationCommand(route)
+        } else {
+            viewModel.maybeNavigateAfterDelay(attributeTitles, problemId, sessionId)
         }
     }
 
-
-    LaunchedEffect(viewModel.rotationDurationInSeconds) {
-        viewModel.rotationDurationInSeconds?.let { durationInSeconds ->
-            coroutineScope.launch {
-                delay(durationInSeconds * 1000)
-                if (state.currentUserId != null) {
-                    val json = Json.encodeToString(attributeTitles)
-                    val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
-
-                    if(viewModel.state.isSubSession) {
-                        val newSessionId = runCatching {
-                            ApiClient.userApi.getCurrentSubSessionId(state.currentUserId)
-                        }.getOrNull()
-
-                        if(newSessionId != null) {
-                            navController.navigate("ideaGeneration/$problemId/$newSessionId/$encodedAttributes")
-                        } else {
-                            val parentSessionId = runCatching {
-                                ApiClient.userApi.getCurrentParentSessionId(state.currentUserId)
-                            }.getOrNull()
-                            navController.navigate(viewModel.nextPage + "/$problemId/$parentSessionId/$encodedAttributes")
-                        }
-                    }
-
-                    navController.navigate(viewModel.nextPage + "/$problemId/$sessionId/$encodedAttributes")
-                }
-            }
-        }
-    }
 
     LaunchedEffect(Unit) {
         while (true) {

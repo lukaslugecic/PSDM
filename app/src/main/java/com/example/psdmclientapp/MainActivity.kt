@@ -83,6 +83,9 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
             val jsonDecoded = URLDecoder.decode(attributesEncoded, StandardCharsets.UTF_8.toString())
             val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
 
+            println("ENCODED FROM URL : $attributesEncoded")
+            println("FIRST: ${attributeTitles[0]}")
+
             IdeaGenerationScreen(navController, problemId, sessionId, attributeTitles)
         }
 

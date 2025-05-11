@@ -4,5 +4,6 @@ data class SessionDetailsResponse(
     val problem: ProblemResponse,
     val session: SessionResponse,
     val steps: List<StepDetailsResponse>,
-    val isSubSession: Boolean
+    val isSubSession: Boolean,
+    val duration: Long
 )

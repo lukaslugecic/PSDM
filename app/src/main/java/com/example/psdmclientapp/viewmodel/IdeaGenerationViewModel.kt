@@ -20,7 +20,11 @@ import javax.inject.Inject
 import android.util.Log
 import com.example.psdmclientapp.model.StepDetailsResponse
 import com.example.psdmclientapp.model.request.AttributeRequest
-import java.time.Duration
+import kotlinx.coroutines.delay
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import kotlinx.serialization.encodeToString
 
 @HiltViewModel
 class IdeaGenerationViewModel @Inject constructor(
@@ -36,90 +40,113 @@ class IdeaGenerationViewModel @Inject constructor(
     var shouldRedirectToSubsession by mutableStateOf(false)
         private set
 
-    var rotationDurationInSeconds by mutableStateOf<Long?>(null)
-        private set
-
     var nextPage by mutableStateOf<String>("")
         private set
 
-    fun loadSession(sessionId: Long) {
+    data class NavigationCommand(
+        val route: String
+    )
+
+    var navigationCommand by mutableStateOf<NavigationCommand?>(null)
+        internal set
+
+
+    suspend fun loadSession(sessionId: Long): Boolean {
+        return try {
+            state = state.copy(isLoading = true)
+
+            val sessionDetails = ApiClient.sessionApi.getSessionDetails(sessionId)
+            val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+
+            val currentUser = UserResponse(
+                3L, "Ime", "Prezime", "Email", LocalDate.now(), 1L
+            )
+
+            val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
+            val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1
+
+            state = state.copy(
+                problemTitle = sessionDetails.body()?.problem?.title.toString(),
+                problemDescription = sessionDetails.body()?.problem?.description.toString(),
+                solutions = solutions,
+                isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
+                isSubSession = sessionDetails.body()?.isSubSession == true,
+                currentUserId = currentUser.id,
+                isLoading = false,
+                problemSolvingMethod = ProblemSolvingMethod.fromId(problemSolvingMethodId)
+                    ?: ProblemSolvingMethod.BRAINSTORMING,
+                decisionMakingMethod = DecisionMakingMethod.fromId(decisionMakingMethodId)
+                    ?: DecisionMakingMethod.AVERAGE_WINNER,
+                duration = sessionDetails.body()?.duration
+            )
+
+            val steps = sessionDetails.body()?.steps
+            var documentRotationStep: StepDetailsResponse? = null
+
+            nextPage = when (state.problemSolvingMethod) {
+                ProblemSolvingMethod.BRAINSTORMING -> "group"
+                ProblemSolvingMethod.BRAINWRITING -> {
+                    documentRotationStep = steps?.find { it.title == "Document Rotation" }
+                    "voting"
+                }
+                ProblemSolvingMethod.SPEEDSTORMING -> {
+                    documentRotationStep = steps?.find { it.title == "Rapid Pair Rotation" }
+                    "voting"
+                }
+                ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> "nominal"
+            }
+
+            val needsRedirect = (state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
+                    state.problemSolvingMethod == ProblemSolvingMethod.SPEEDSTORMING) &&
+                    !state.isSubSession
+
+            needsRedirect
+        } catch (e: Exception) {
+            state = state.copy(
+                errorMessage = e.localizedMessage,
+                isLoading = false
+            )
+            false
+        }
+    }
+
+
+
+    fun maybeNavigateAfterDelay(attributeTitles: List<String>, problemId: Long, sessionId: Long) {
         viewModelScope.launch {
-            try {
-                state = state.copy(isLoading = true)
+            state.duration?.let { durationInSeconds ->
+                delay(durationInSeconds * 1000)
 
-                val sessionDetails = ApiClient.sessionApi.getSessionDetails(sessionId)
-                val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
-                //val currentUser = ApiClient.authApi.getCurrentUser();
+                if (state.currentUserId == null) return@launch
 
-                val currentUser = UserResponse(
-                    2L,
-                    "Ime",
-                    "Prezime",
-                    "Email",
-                    LocalDate.now(),
-                    1L
-                )
+                val json = Json.encodeToString(attributeTitles)
+                val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
 
-                val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
-                val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1
+                if (state.isSubSession) {
+                    val newSessionId = runCatching {
+                        ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
+                    }.getOrNull()
 
+                    val route = if (newSessionId != null) {
+                        "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
+                    } else {
+                        val parentSessionId = runCatching {
+                            ApiClient.userApi.getCurrentParentSessionId(state.currentUserId!!)
+                        }.getOrNull()
 
-                state = state.copy(
-                    problemTitle = sessionDetails.body()?.problem?.title.toString(),
-                    problemDescription = sessionDetails.body()?.problem?.description.toString(),
-                    solutions = solutions,
-                    isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
-                    isSubSession = sessionDetails.body()?.isSubSession == true,
-                    currentUserId = currentUser.id,
-                    isLoading = false,
-                    problemSolvingMethod = ProblemSolvingMethod.fromId(problemSolvingMethodId) ?: ProblemSolvingMethod.BRAINSTORMING,
-                    decisionMakingMethod = DecisionMakingMethod.fromId(decisionMakingMethodId) ?: DecisionMakingMethod.AVERAGE_WINNER
-                )
-
-
-                val steps = sessionDetails.body()?.steps
-
-                var documentRotationStep: StepDetailsResponse? = null
-
-                when(state.problemSolvingMethod){
-                    ProblemSolvingMethod.BRAINSTORMING -> {
-                        nextPage = "group"
+                        "$nextPage/$problemId/$parentSessionId/$encodedAttributes"
                     }
-                    ProblemSolvingMethod.BRAINWRITING -> {
-                        nextPage = "voting"
-                        documentRotationStep = steps?.find { it.title == "Document Rotation"}
-                    }
-                    ProblemSolvingMethod.SPEEDSTORMING -> {
-                        nextPage = "voting"
-                        documentRotationStep = steps?.find { it.title == "Rapid Pair Rotation"}
-                    }
-                    ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> {
-                        nextPage = "nominal"
-                    }
+
+                    navigationCommand = NavigationCommand(route)
+                } else {
+                    val route = "$nextPage/$problemId/$sessionId/$encodedAttributes"
+                    navigationCommand = NavigationCommand(route)
                 }
-
-                rotationDurationInSeconds = try {
-                    documentRotationStep?.duration?.let { Duration.parse(it).seconds }
-                } catch (e: Exception) {
-                    Log.e("ParseDuration", "Invalid duration format: ${documentRotationStep?.duration}", e)
-                    null
-                }
-
-                if ((state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
-                            state.problemSolvingMethod == ProblemSolvingMethod.SPEEDSTORMING) &&
-                    state.isSubSession == false) {
-                    shouldRedirectToSubsession = true
-                }
-
-
-            } catch (e: Exception) {
-                state = state.copy(
-                    errorMessage = e.localizedMessage,
-                    isLoading = false
-                )
             }
         }
     }
+
+
     fun refreshSolutions() {
         viewModelScope.launch {
             try {
