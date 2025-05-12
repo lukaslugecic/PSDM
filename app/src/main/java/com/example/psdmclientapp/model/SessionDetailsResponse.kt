@@ -3,7 +3,6 @@ package com.example.psdmclientapp.model
 data class SessionDetailsResponse(
     val problem: ProblemResponse,
     val session: SessionResponse,
-    val steps: List<StepDetailsResponse>,
-    val isSubSession: Boolean,
+    val parentSessionId: Long?,
     val duration: Long
 )

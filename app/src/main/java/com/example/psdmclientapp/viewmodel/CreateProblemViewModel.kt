@@ -42,8 +42,8 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
     private fun fetchMethods() {
         viewModelScope.launch {
             try {
-                problemSolvingMethods = ApiClient.methodApiService.getSolvingSolvingMethods()
-                decisionMakingMethods = ApiClient.methodApiService.getDecisionMakingMethods()
+                problemSolvingMethods = ApiClient.methodApi.getSolvingSolvingMethods()
+                decisionMakingMethods = ApiClient.methodApi.getDecisionMakingMethods()
             } catch (e: Exception) {
                 errorMessage = "Failed to load methods: ${e.message}"
             }

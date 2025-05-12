@@ -60,19 +60,14 @@ fun VotingScreen(
         }
 
         Button(
-            onClick = { viewModel.submitVotes() },
+            onClick = {
+                viewModel.submitVotes {
+                    navController.navigate("decisionResult/$problemId/$sessionId")
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Submit Vote")
-        }
-
-        Button(
-            onClick = {
-                navController.navigate("decisionResult/${problemId}/${sessionId}")
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-        ) {
-            Text("Result")
         }
 
         state.errorMessage?.let {

@@ -17,8 +17,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
-import android.util.Log
-import com.example.psdmclientapp.model.StepDetailsResponse
 import com.example.psdmclientapp.model.request.AttributeRequest
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
@@ -35,9 +33,6 @@ class IdeaGenerationViewModel @Inject constructor(
     private val problemId: Long = checkNotNull(savedStateHandle["problemId"])
 
     var state by mutableStateOf(ProblemSolvingSessionState())
-        private set
-
-    var shouldRedirectToSubsession by mutableStateOf(false)
         private set
 
     var nextPage by mutableStateOf<String>("")
@@ -70,7 +65,7 @@ class IdeaGenerationViewModel @Inject constructor(
                 problemDescription = sessionDetails.body()?.problem?.description.toString(),
                 solutions = solutions,
                 isOwner = sessionDetails.body()?.problem?.moderatorId == currentUser.id,
-                isSubSession = sessionDetails.body()?.isSubSession == true,
+                parentSessionId = sessionDetails.body()?.parentSessionId,
                 currentUserId = currentUser.id,
                 isLoading = false,
                 problemSolvingMethod = ProblemSolvingMethod.fromId(problemSolvingMethodId)
@@ -80,27 +75,18 @@ class IdeaGenerationViewModel @Inject constructor(
                 duration = sessionDetails.body()?.duration
             )
 
-            val steps = sessionDetails.body()?.steps
-            var documentRotationStep: StepDetailsResponse? = null
-
             nextPage = when (state.problemSolvingMethod) {
                 ProblemSolvingMethod.BRAINSTORMING -> "group"
-                ProblemSolvingMethod.BRAINWRITING -> {
-                    documentRotationStep = steps?.find { it.title == "Document Rotation" }
-                    "voting"
-                }
-                ProblemSolvingMethod.SPEEDSTORMING -> {
-                    documentRotationStep = steps?.find { it.title == "Rapid Pair Rotation" }
-                    "voting"
-                }
+                ProblemSolvingMethod.BRAINWRITING -> "voting"
+                ProblemSolvingMethod.SPEEDSTORMING -> "voting"
                 ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> "nominal"
             }
 
-            val needsRedirect = (state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
+            val needsRedirectToSubsession = (state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
                     state.problemSolvingMethod == ProblemSolvingMethod.SPEEDSTORMING) &&
-                    !state.isSubSession
+                    state.parentSessionId == null
 
-            needsRedirect
+            needsRedirectToSubsession
         } catch (e: Exception) {
             state = state.copy(
                 errorMessage = e.localizedMessage,
@@ -122,19 +108,17 @@ class IdeaGenerationViewModel @Inject constructor(
                 val json = Json.encodeToString(attributeTitles)
                 val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
 
-                if (state.isSubSession) {
+                if (state.parentSessionId != null) {
                     val newSessionId = runCatching {
                         ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
                     }.getOrNull()
 
+                    println("KAJ SMO NA PRVOM??")
                     val route = if (newSessionId != null) {
                         "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
                     } else {
-                        val parentSessionId = runCatching {
-                            ApiClient.userApi.getCurrentParentSessionId(state.currentUserId!!)
-                        }.getOrNull()
-
-                        "$nextPage/$problemId/$parentSessionId/$encodedAttributes"
+                        println("KAJ SMO NA DRUGOM??")
+                        "$nextPage/$problemId/${state.parentSessionId}/$encodedAttributes"
                     }
 
                     navigationCommand = NavigationCommand(route)
@@ -185,17 +169,6 @@ class IdeaGenerationViewModel @Inject constructor(
         }
     }
 
-
-    fun endProblemSolving() {
-        viewModelScope.launch {
-            try {
-               // ApiClient.sessionApi.endProblemSolving(sessionId)
-                println("endam ti mamu")
-            } catch (e: Exception) {
-                state = state.copy(errorMessage = e.localizedMessage)
-            }
-        }
-    }
 
     fun submitGroupedSolution(newTitle: String, solutionIds: List<Long>) {
         println("submit")

@@ -3,19 +3,20 @@ package com.example.psdmclientapp.ui.screen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.example.psdmclientapp.viewmodel.VotingViewModel
+import com.example.psdmclientapp.viewmodel.DecisionResultViewModel
 
 @Composable
 fun DecisionResultScreen(
     navController: NavHostController,
     problemId: Long,
     sessionId: Long,
-    viewModel: VotingViewModel = viewModel()
+    viewModel: DecisionResultViewModel = viewModel()
 ) {
     Column(
         modifier = Modifier
@@ -25,6 +26,11 @@ fun DecisionResultScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val winningSolution = viewModel.winningSolution
+
+        LaunchedEffect(Unit) {
+            viewModel.determineWinner()
+        }
+
 
         if (winningSolution != null) {
             Text(
@@ -60,14 +66,20 @@ fun DecisionResultScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             if (winningSolution == null) {
                 Button(
-                    onClick = { viewModel.startNewSession() }
+                    onClick = {
+                        navController.navigate("createSession/$problemId")
+                    }
                 ){
                     Text("Start New Session")
                 }
             }
 
             OutlinedButton(
-                onClick = { viewModel.returnHome() }
+                onClick = {
+                    navController.navigate("home") {
+                        popUpTo("voting/$problemId/$sessionId") { inclusive = true }
+                    }
+                }
             ) {
                 Text("Return Home")
             }

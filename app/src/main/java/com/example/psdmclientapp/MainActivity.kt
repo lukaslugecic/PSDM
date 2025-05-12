@@ -84,44 +84,62 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
             val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
 
             println("ENCODED FROM URL : $attributesEncoded")
-            println("FIRST: ${attributeTitles[0]}")
+           // println("FIRST: ${attributeTitles[0]}")
 
             IdeaGenerationScreen(navController, problemId, sessionId, attributeTitles)
         }
 
         composable(
-            route = "groupIdeas/{problemId}/{sessionId}",
+            route = "groupIdeas/{problemId}/{sessionId}/{attributes}",
             arguments = listOf(
                 navArgument("problemId") { type = NavType.LongType },
-                navArgument("sessionId") { type = NavType.LongType }
+                navArgument("sessionId") { type = NavType.LongType },
+                navArgument("attributes") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+
+            val attributesEncoded = backStackEntry.arguments?.getString("attributes") ?: ""
+            val jsonDecoded = URLDecoder.decode(attributesEncoded, StandardCharsets.UTF_8.toString())
+            val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
+
             IdeaGroupingScreen(navController, problemId, sessionId)
         }
 
         composable(
-            "nominalGroup/{problemId}/{sessionId}",
+            "nominal/{problemId}/{sessionId}/{attributes}",
             arguments = listOf(
                 navArgument("problemId") { type = NavType.LongType },
-                navArgument("sessionId") { type = NavType.LongType }
+                navArgument("sessionId") { type = NavType.LongType },
+                navArgument("attributes") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+
+            val attributesEncoded = backStackEntry.arguments?.getString("attributes") ?: ""
+            val jsonDecoded = URLDecoder.decode(attributesEncoded, StandardCharsets.UTF_8.toString())
+            val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
+
             NominalGroupScreen(navController, problemId, sessionId)
         }
 
         composable(
-            "voting/{problemId}/{sessionId}",
+            "voting/{problemId}/{sessionId}/{attributes}",
             arguments = listOf(
                 navArgument("problemId") { type = NavType.LongType },
-                navArgument("sessionId") { type = NavType.LongType }
+                navArgument("sessionId") { type = NavType.LongType },
+                navArgument("attributes") { type = NavType.StringType }
             )
         ) { backStackEntry ->
             val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
             val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+
+            val attributesEncoded = backStackEntry.arguments?.getString("attributes") ?: ""
+            val jsonDecoded = URLDecoder.decode(attributesEncoded, StandardCharsets.UTF_8.toString())
+            val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
+
             VotingScreen(navController, problemId, sessionId)
         }
 

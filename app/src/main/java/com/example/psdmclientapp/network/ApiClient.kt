@@ -14,6 +14,8 @@ object ApiClient {
     val userApi: UserApiService = retrofit.create(UserApiService::class.java)
     val sessionApi: SessionApiService = retrofit.create(SessionApiService::class.java)
     val solutionApi: SolutionApiService = retrofit.create(SolutionApiService::class.java)
-    val methodApiService: MethodApiService = retrofit.create(MethodApiService::class.java)
+    val methodApi: MethodApiService = retrofit.create(MethodApiService::class.java)
+    val voteApi: VoteApiService = retrofit.create(VoteApiService::class.java)
+
 }
 

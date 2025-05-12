@@ -21,4 +21,7 @@ interface SolutionApiService {
 
     @POST("solution/group")
     suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : SolutionResponse
+
+    @GET("solution/winningSolution/{sessionId}")
+    suspend fun getWinningSolution(@Path("sessionId") sessionId: Long): SolutionResponse
 }

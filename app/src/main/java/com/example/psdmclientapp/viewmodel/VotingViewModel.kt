@@ -7,12 +7,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.enum.DecisionMakingMethod
-import com.example.psdmclientapp.model.SolutionResponse
+import com.example.psdmclientapp.model.request.VoteRequest
 import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.state.VotingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import javax.inject.Inject
 
 
@@ -25,28 +24,23 @@ class VotingViewModel @Inject constructor(
     var state by mutableStateOf(VotingState())
         private set
 
-    var winningSolution by mutableStateOf<SolutionResponse?>(null)
-        private set
-
     init {
         loadSolutions()
-        determineWinner()
     }
 
     fun loadSolutions() {
         viewModelScope.launch {
-            // Fetch solutions & decision method for this session
             val session = ApiClient.sessionApi.getSessionDetails(sessionId)
-            val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+            val solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
 
             val decisionMethod = session.body()?.session?.decisionMakingMethodId?.let {
                 DecisionMakingMethod.entries.first { m -> m.id == it }
             } ?: DecisionMakingMethod.MAJORITY_RULE
 
             state = state.copy(
+                currentUserId = 2L,
                 solutions = solutions,
-                decisionMethod = decisionMethod,
-                ranking = solutions.map { it.id }
+                decisionMethod = decisionMethod
             )
         }
     }
@@ -57,48 +51,32 @@ class VotingViewModel @Inject constructor(
         })
     }
 
-    fun submitVotes() {
+    fun submitVotes(onSuccess: () -> Unit) {
         viewModelScope.launch {
             try {
-                // Send appropriate request depending on method
-                when (state.decisionMethod) {
-                    DecisionMakingMethod.MAJORITY_RULE -> {
-                        // send state.selectedSolutionId
-                    }
-                    DecisionMakingMethod.AVERAGE_WINNER -> {
-                        // send state.ratings
-                    }
-                    DecisionMakingMethod.BORDA_RANKING -> {
-                        // send state.ranking
-                    }
-
-                    DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER -> TODO()
+                val votes = state.ratings.map { (solutionId, rating) ->
+                    VoteRequest(
+                        userId = state.currentUserId!!,
+                        solutionId = solutionId,
+                        value = rating.toDouble()
+                    )
                 }
+                ApiClient.voteApi.submitVotes(votes)
+
+//                while (true) {
+//                    val allVoted = ApiClient.voteApi.haveAllUsersVoted(sessionId)
+//                    if (allVoted) {
+//                        state = state.copy(shouldNavigateToResult = true)
+//                        break
+//                    }
+//                    delay(3000) // Poll every 3 seconds
+//                }
+
+                onSuccess()
             } catch (e: Exception) {
                 state = state.copy(errorMessage = e.localizedMessage)
             }
         }
     }
 
-    fun determineWinner() {
-        // Assume winner has been calculated already
-        winningSolution = SolutionResponse(
-            1L,
-            "Najbolje rešenje",
-            "Opis",
-            1L,
-            1L,
-            1L,
-            LocalDateTime.now().toString(),
-            true
-        )
-    }
-
-    fun startNewSession() {
-
-    }
-
-    fun returnHome() {
-
-    }
 }
