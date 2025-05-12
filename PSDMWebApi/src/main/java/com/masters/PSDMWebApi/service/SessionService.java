@@ -21,8 +21,6 @@ public interface SessionService {
 
     void deleteSession(Long id);
 
-    Long getBestSolution(Long id);
-
     void addUsers(Long id, List<Long> usersIds);
 }
 

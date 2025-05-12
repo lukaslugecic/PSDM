@@ -75,11 +75,6 @@ public class SessionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/bestSolution/{id}")
-    public ResponseEntity<Long> getBestSolution(@PathVariable Long id) {
-        return ResponseEntity.ok(sessionService.getBestSolution(id));
-    }
-
     @PostMapping("addUsers")
     public ResponseEntity<Void> addUsers(@RequestBody InviteUsersRequestDTO dto) {
         sessionService.addUsers(dto.getSessionId(), dto.getUserIds());

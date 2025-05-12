@@ -9,11 +9,5 @@ public interface UserService {
 
     Optional<User> getUserById(Long id);
 
-    User createUser(User user);
-
-    User updateUser(Long id, User user);
-
-    void deleteUser(Long id);
-
     Long getCurrentSessionId(Long userId, boolean isSubSession);
 }

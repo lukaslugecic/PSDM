@@ -80,5 +80,11 @@ public class SolutionController {
         solutionService.deleteSolution(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/winningSolution/{sessionId}")
+    public ResponseEntity<SolutionDTO> getWinningSolution(@PathVariable Long sessionId) {
+        Solution solution = solutionService.getWinnigSolution(sessionId);
+        return ResponseEntity.ok(SolutionMapper.toDTO(solution));
+    }
 }
 

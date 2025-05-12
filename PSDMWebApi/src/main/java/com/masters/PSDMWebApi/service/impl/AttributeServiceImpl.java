@@ -1,8 +1,8 @@
 package com.masters.PSDMWebApi.service.impl;
 
-import com.masters.PSDMWebApi.model.Attribute;
 import com.masters.PSDMWebApi.repository.AttributeRepository;
 import com.masters.PSDMWebApi.service.AttributeService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,39 +10,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class AttributeServiceImpl implements AttributeService {
 
     private final AttributeRepository attributeRepository;
-
-    public AttributeServiceImpl(AttributeRepository attributeRepository) {
-        this.attributeRepository = attributeRepository;
-    }
-
-    @Override
-    public List<Attribute> getAllAttributes() {
-        return attributeRepository.findAll();
-    }
-
-    @Override
-    public Optional<Attribute> getAttributeById(Long id) {
-        return attributeRepository.findById(id);
-    }
-
-    @Override
-    public Attribute createAttribute(Attribute attribute) {
-        return attributeRepository.save(attribute);
-    }
-
-    @Override
-    public Attribute updateAttribute(Long id, Attribute attribute) {
-        attribute.setId(id);
-        return attributeRepository.save(attribute);
-    }
-
-    @Override
-    public void deleteAttribute(Long id) {
-        attributeRepository.deleteById(id);
-    }
 
     @Override
     public Double getWeightBySolutionId(Long id) {

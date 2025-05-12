@@ -22,5 +22,7 @@ public interface SolutionService {
     List<Solution> getSolutionsBySessionId(Long sessionId);
 
     List<Solution> getSolutionsByParentSessionIdOrSessionId(Long sessionId);
+
+    Solution getWinnigSolution(Long sessionId);
 }
 

@@ -30,8 +30,8 @@ public class SolutionMapper {
         return new SolutionDTO(
                 solution.getId(),
                 solution.getTitle(),
-                solution.getUser().getId(),
-                solution.getProblem().getId(),
+                2L,
+                solution.getProblem().getId(), // TODO fiksat
                 solution.getSession().getId(),
                 solution.getCreatedTime(),
                 solution.getChosen(),
