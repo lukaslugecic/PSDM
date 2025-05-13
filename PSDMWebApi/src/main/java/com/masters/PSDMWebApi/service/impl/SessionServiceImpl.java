@@ -46,7 +46,7 @@ public class SessionServiceImpl implements SessionService {
 
     @Override
     public Optional<SessionDetailsDTO> getSessionDetailsById(Long id) {
-        Optional<SessionDetailsDTO> sessionDetailsDTO = sessionRepository.findById(id)
+        return sessionRepository.findById(id)
                 .flatMap(session -> {
                         SessionDetailsDTO detailsDTO = new SessionDetailsDTO(
                                 ProblemMapper.toDTO(session.getProblem()),
@@ -56,9 +56,6 @@ public class SessionServiceImpl implements SessionService {
                         );
                         return Optional.of(detailsDTO);
                 });
-
-        log.warn("Session details retrieved from database: {}", sessionDetailsDTO.get().getDuration());
-        return sessionDetailsDTO;
     }
 
     private Long getIdeaGenerationDuration(Session session) {

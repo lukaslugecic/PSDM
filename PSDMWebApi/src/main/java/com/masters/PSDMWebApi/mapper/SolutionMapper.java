@@ -30,8 +30,8 @@ public class SolutionMapper {
         return new SolutionDTO(
                 solution.getId(),
                 solution.getTitle(),
-                2L,
-                solution.getProblem().getId(), // TODO fiksat
+                solution.getUser().getId(),
+                solution.getProblem().getId(),
                 solution.getSession().getId(),
                 solution.getCreatedTime(),
                 solution.getChosen(),
@@ -58,9 +58,6 @@ public class SolutionMapper {
     public static Solution toEntity(SolutionRequestDTO dto) {
         if (dto == null) return null;
 
-
-        log.info("dto title: {}", dto.getTitle());
-
         Solution entity = new Solution();
         entity.setTitle(dto.getTitle());
         entity.setUser(new User(dto.getUserId()));
@@ -80,8 +77,6 @@ public class SolutionMapper {
 
             entity.setAttributes(attributeList);
         }
-
-        log.info("Solution title in entity: {}", entity.getTitle());
 
         return entity;
     }

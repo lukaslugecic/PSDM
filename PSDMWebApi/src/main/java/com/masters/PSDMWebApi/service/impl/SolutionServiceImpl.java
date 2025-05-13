@@ -84,13 +84,10 @@ public class SolutionServiceImpl implements SolutionService {
     }
 
     @Override
+    @Transactional
     public Solution getWinnigSolution(Long sessionId){
-        Solution res = solutionRepository.findById(Objects.requireNonNull(getBestSolution(sessionId)))
+        return solutionRepository.findById(Objects.requireNonNull(getBestSolution(sessionId)))
                 .orElse(null);
-
-        log.warn("Winnig solution: {}", res);
-
-        return new Solution();
     }
 
 
@@ -101,16 +98,13 @@ public class SolutionServiceImpl implements SolutionService {
         }
         Session session = sessionOptional.get();
 
-        Long res = switch (session.getDecisionMakingMethod().getTitle()) {
+        return switch (session.getDecisionMakingMethod().getTitle()) {
             case "Average winner" -> getAverageWinnerFinalSolution(session).orElse(null);
             case "Weighted average winner" -> getWeightedAverageWinnerFinalSolution(session).orElse(null);
             case "Borda ranking" -> getBordaRankingFinalSolution(session).orElse(null);
             case "Majority rule" -> getMajorityRuleFinalSolution(session).orElse(null);
             default -> throw new IllegalStateException("Unexpected value: " + session.getDecisionMakingMethod().getTitle());
         };
-
-        log.warn("BEST SOLUTION: {}", res);
-        return res;
     }
 
 
@@ -160,7 +154,6 @@ public class SolutionServiceImpl implements SolutionService {
 
     private Optional<Long> getBordaRankingFinalSolution(Session session) {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
-        log.warn("solutions: {}", solutions);
         int totalSolutions = solutions.size();
 
         Map<Long, Integer> scores = solutions.stream()
