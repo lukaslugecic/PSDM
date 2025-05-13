@@ -7,6 +7,7 @@ import com.masters.PSDMWebApi.mapper.SolutionMapper;
 import com.masters.PSDMWebApi.model.Solution;
 import com.masters.PSDMWebApi.service.SolutionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/solution")
 @RequiredArgsConstructor
+@Slf4j
 public class SolutionController {
 
     private final SolutionService solutionService;
@@ -38,6 +40,8 @@ public class SolutionController {
 
     @GetMapping("/session/parent/{sessionId}")
     public List<SolutionDTO> getSolutionsByParentSessionIdOrSessionId(@PathVariable Long sessionId) {
+        log.warn("parent sessionId: {}", sessionId);
+
         return solutionService.getSolutionsByParentSessionIdOrSessionId(sessionId)
                 .stream()
                 .map(SolutionMapper::toDTO)

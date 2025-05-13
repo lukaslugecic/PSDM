@@ -43,7 +43,7 @@ public class Session {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private List<User> users;
 
-    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
     private List<Solution> solutions;
 
     @ManyToOne

@@ -40,6 +40,7 @@ public class SolutionServiceImpl implements SolutionService {
     }
 
     @Override
+    @Transactional
     public Solution createSolution(Solution solution) {
         log.info("Saving solution with title: {}", solution.getTitle());
         return solutionRepository.save(solution);
