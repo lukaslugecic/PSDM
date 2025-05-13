@@ -10,7 +10,6 @@ import com.example.psdmclientapp.enum.DecisionMakingMethod
 import com.example.psdmclientapp.enum.ProblemSolvingMethod
 import com.example.psdmclientapp.model.request.SolutionRequest
 import com.example.psdmclientapp.model.UserResponse
-import com.example.psdmclientapp.model.request.GroupSolutionRequest
 import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.state.ProblemSolvingSessionState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,10 +75,10 @@ class IdeaGenerationViewModel @Inject constructor(
             )
 
             nextPage = when (state.problemSolvingMethod) {
-                ProblemSolvingMethod.BRAINSTORMING -> "group"
+                ProblemSolvingMethod.BRAINSTORMING -> "grouping"
                 ProblemSolvingMethod.BRAINWRITING -> "voting"
                 ProblemSolvingMethod.SPEEDSTORMING -> "voting"
-                ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> "nominal"
+                ProblemSolvingMethod.NOMINAL_GROUP_TECHNIQUE -> "grouping" // TODO Nominal
             }
 
             val needsRedirectToSubsession = (state.problemSolvingMethod == ProblemSolvingMethod.BRAINWRITING ||
@@ -113,11 +112,9 @@ class IdeaGenerationViewModel @Inject constructor(
                         ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
                     }.getOrNull()
 
-                    println("KAJ SMO NA PRVOM??")
                     val route = if (newSessionId != null) {
                         "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
                     } else {
-                        println("KAJ SMO NA DRUGOM??")
                         "$nextPage/$problemId/${state.parentSessionId}/$encodedAttributes"
                     }
 
@@ -149,8 +146,6 @@ class IdeaGenerationViewModel @Inject constructor(
                     .filter { it.first.isNotBlank() && it.second.isNotBlank() }
                     .map { (key, value) -> AttributeRequest(title = key, value = value) }
 
-                println("")
-
                 val newSolution = ApiClient.solutionApi.submitSolution(
                     SolutionRequest(
                         title = title,
@@ -168,75 +163,5 @@ class IdeaGenerationViewModel @Inject constructor(
             }
         }
     }
-
-
-    fun submitGroupedSolution(newTitle: String, solutionIds: List<Long>) {
-        println("submit")
-        viewModelScope.launch {
-            try {
-                val newSolution = ApiClient.solutionApi.groupSolutions(
-                    GroupSolutionRequest(
-                        solutionIds,
-                        SolutionRequest(
-                            title = newTitle,
-                            userId = state.currentUserId,
-                            problemId = problemId,
-                            sessionId = sessionId
-                        )
-                    )
-                )
-
-                state = state.copy(solutions = state.solutions + newSolution)
-
-            } catch (e: Exception) {
-                state = state.copy(errorMessage = e.localizedMessage)
-            }
-        }
-    }
-
-    fun refreshTurn() {
-        viewModelScope.launch {
-            try {
-                val turnUserId = ApiClient.sessionApi.getCurrentTurnUserId(sessionId)
-                val isMyTurn = turnUserId == state.currentUserId
-                state = state.copy(
-                    currentUserId = turnUserId,
-                    isCurrentTurn = isMyTurn
-                )
-            } catch (e: Exception) {
-                state = state.copy(errorMessage = e.localizedMessage)
-            }
-        }
-    }
-
-    fun submitTurnIdea(title: String) {
-        if (!state.isCurrentTurn) {
-            state = state.copy(errorMessage = "Nisi na redu!")
-            return
-        }
-
-        viewModelScope.launch {
-            try {
-                val newSolution = ApiClient.solutionApi.submitSolution(
-                    SolutionRequest(
-                        title,
-                        state.currentUserId,
-                        problemId,
-                        sessionId
-                    )
-                )
-                state = state.copy(
-                    solutions = state.solutions + newSolution
-                )
-
-                // Napredak u krugu
-                ApiClient.sessionApi.advanceTurn(sessionId)
-                refreshTurn()
-            } catch (e: Exception) {
-                state = state.copy(errorMessage = e.localizedMessage)
-            }
-        }
-    }
-
 
 }

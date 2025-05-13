@@ -16,7 +16,6 @@ import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel.NavigationCommand
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
@@ -31,7 +30,7 @@ fun IdeaGenerationScreen(
     attributeTitles: List<String>,
     viewModel: IdeaGenerationViewModel = viewModel()
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    rememberCoroutineScope()
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
@@ -48,7 +47,7 @@ fun IdeaGenerationScreen(
     LaunchedEffect(navCommand) {
         navCommand?.let {
             navController.navigate(it.route)
-            viewModel.navigationCommand = null // reset so it doesn't fire again
+            viewModel.navigationCommand = null
         }
     }
 
@@ -101,7 +100,7 @@ fun IdeaGenerationScreen(
 
                 HorizontalDivider()
 
-                Text("Ideje:", style = MaterialTheme.typography.titleMedium)
+                Text("Ideas:", style = MaterialTheme.typography.titleMedium)
 
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(state.solutions) { idea ->
@@ -142,19 +141,19 @@ fun IdeaGenerationScreen(
 
                 Button(
                     onClick = { showInputs = !showInputs },
-                    modifier = Modifier.align(Alignment.End)
+                    modifier = Modifier.align(Alignment.Start)
                 ) {
-                    Text(if (showInputs) "Sakrij unos" else "Dodaj ideju")
+                    Text(if (showInputs) "Hide Entry" else "Show Entry")
                 }
                 if(showInputs) {
                     OutlinedTextField(
                         value = ideaInput,
                         onValueChange = { ideaInput = it },
-                        label = { Text("Naslov ideje") },
+                        label = { Text("Idea Title") },
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Atributi:", style = MaterialTheme.typography.labelLarge)
+                    Text("Attributes:", style = MaterialTheme.typography.labelLarge)
 
                     Column(
                         modifier = Modifier
@@ -186,9 +185,10 @@ fun IdeaGenerationScreen(
                             ideaInput = ""
                             attributeInputs = attributeTitles.associateWith { "" }
                         },
-                        enabled = ideaInput.isNotBlank()
+                        modifier = Modifier.align(Alignment.End),
+                        enabled = ideaInput.isNotBlank() && attributeInputs.values.all { it.isNotBlank() }
                     ) {
-                        Text("Pošalji ideju")
+                        Text("Send Idea")
                     }
                 }
 

@@ -13,7 +13,7 @@ fun AverageVotingUI(
     onRate: (Long, Int) -> Unit
 ) {
     Column {
-        Text("Ocijeni svako rješenje (1-5):", style = MaterialTheme.typography.titleMedium)
+        Text("Rate each solution (1-5):", style = MaterialTheme.typography.titleMedium)
 
         state.solutions.forEach { solution ->
             val rating = state.ratings[solution.id] ?: 3 // default to 3

@@ -90,7 +90,7 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
         }
 
         composable(
-            route = "groupIdeas/{problemId}/{sessionId}/{attributes}",
+            route = "grouping/{problemId}/{sessionId}/{attributes}",
             arguments = listOf(
                 navArgument("problemId") { type = NavType.LongType },
                 navArgument("sessionId") { type = NavType.LongType },
@@ -104,7 +104,7 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
             val jsonDecoded = URLDecoder.decode(attributesEncoded, StandardCharsets.UTF_8.toString())
             val attributeTitles: List<String> = Json.decodeFromString(jsonDecoded)
 
-            IdeaGroupingScreen(navController, problemId, sessionId)
+            IdeaGroupingScreen(navController, problemId, sessionId, attributeTitles)
         }
 
         composable(

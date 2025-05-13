@@ -32,6 +32,8 @@ fun BordaVotingUI(
         this[index2] = tmp
     }
 
+    Text("Sort solutions (best on top):", style = MaterialTheme.typography.titleMedium)
+
     LazyColumn {
         itemsIndexed(orderedSolutions) { index, solution ->
             Card(

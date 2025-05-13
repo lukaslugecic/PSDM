@@ -45,7 +45,26 @@ fun DecisionResultScreen(
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(text = "Title: ${winningSolution.title}", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = winningSolution.description)
+                    if (winningSolution.attributes.isNotEmpty()) {
+                        Text(
+                            text = "Attributes:",
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.padding(top = 12.dp, bottom = 8.dp)
+                        )
+
+                        winningSolution.attributes.forEach { attr ->
+                            Text(
+                                text = "• ${attr.title}: ${attr.value}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "No attributes available.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         } else {
@@ -67,7 +86,9 @@ fun DecisionResultScreen(
             if (winningSolution == null) {
                 Button(
                     onClick = {
-                        navController.navigate("createSession/$problemId")
+                        navController.navigate("mainMenu") {
+                            popUpTo(0) { inclusive = true }
+                        }
                     }
                 ){
                     Text("Start New Session")
@@ -76,8 +97,8 @@ fun DecisionResultScreen(
 
             OutlinedButton(
                 onClick = {
-                    navController.navigate("home") {
-                        popUpTo("voting/$problemId/$sessionId") { inclusive = true }
+                    navController.navigate("mainMenu") {
+                        popUpTo(0) { inclusive = true }
                     }
                 }
             ) {

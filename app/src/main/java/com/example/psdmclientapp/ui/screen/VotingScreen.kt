@@ -52,7 +52,7 @@ fun VotingScreen(
             }
 
             DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER -> {
-                MajorityVotingUI(
+                AverageVotingUI(
                     state = state,
                     onRate = { id, rating -> viewModel.setRating(id, rating) }
                 )

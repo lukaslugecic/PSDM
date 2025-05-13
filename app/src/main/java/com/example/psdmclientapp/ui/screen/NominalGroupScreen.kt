@@ -56,12 +56,12 @@ fun NominalGroupScreen(
 
     LaunchedEffect(sessionId) {
         viewModel.loadSession(sessionId)
-        viewModel.refreshTurn()
+        //viewModel.refreshTurn()
 
         while (true) {
             delay(4000)
             viewModel.refreshSolutions()
-            viewModel.refreshTurn() // ako imaš metodu koja dohvaća čiji je red
+        //    viewModel.refreshTurn() // ako imaš metodu koja dohvaća čiji je red
         }
     }
 
@@ -126,7 +126,7 @@ fun NominalGroupScreen(
                             val ideaToSubmit = newIdeaText.ifBlank {
                                 state.solutions.find { it.id == selectedIdeaId }?.title.orEmpty()
                             }
-                            viewModel.submitTurnIdea(ideaToSubmit)
+                        //    viewModel.submitTurnIdea(ideaToSubmit)
                             newIdeaText = ""
                             selectedIdeaId = null
                         },

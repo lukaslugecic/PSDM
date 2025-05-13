@@ -53,6 +53,12 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
 
 
     suspend fun submit(onSuccess: (SessionResponse) -> Unit) {
+        val validationError = validateInput()
+        if (validationError != null) {
+            errorMessage = validationError
+            return
+        }
+
         try {
             isLoading = true
             errorMessage = null
@@ -80,4 +86,19 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
             isLoading = false
         }
     }
+
+    fun validateInput(): String? {
+        if (title.isBlank()) return "Problem title must not be empty."
+        if (description.isBlank()) return "Problem description must not be empty."
+        if (selectedSolvingMethodId == null) return "Please select a problem-solving method."
+        if (selectedDecisionMethodId == null) return "Please select a decision-making method."
+
+        val trimmedAttributes = attributeTitles.map { it.trim() }
+
+        if (trimmedAttributes.any { it.isEmpty() }) return "All attribute fields must be filled."
+        if (trimmedAttributes.toSet().size != trimmedAttributes.size) return "Attribute names must be unique."
+
+        return null
+    }
+
 }

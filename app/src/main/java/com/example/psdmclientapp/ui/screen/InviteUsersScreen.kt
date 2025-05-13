@@ -32,7 +32,7 @@ fun InviteUsersScreen(
     val errorMessage = viewModel.errorMessage
 
     LaunchedEffect(Unit) {
-        viewModel.loadUsers() // pretend we're fetching from backend
+        viewModel.loadUsers()
     }
 
     Scaffold(
@@ -45,7 +45,7 @@ fun InviteUsersScreen(
                 .padding(padding)
                 .padding(24.dp)
         ) {
-            Text("Odaberi korisnike koje želiš pozvati:", style = MaterialTheme.typography.titleMedium)
+            Text("Select the users you want to invite:", style = MaterialTheme.typography.titleMedium)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -75,7 +75,6 @@ fun InviteUsersScreen(
                     coroutineScope.launch {
                         viewModel.sendInvites(sessionId)
                         if (viewModel.errorMessage == null) {
-                           // navController.navigate("sessionLobby/$sessionId")
 
                             val json = Json.encodeToString(attributeTitles)
                             val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
@@ -86,7 +85,7 @@ fun InviteUsersScreen(
                 },
                 enabled = !isLoading
             ) {
-                Text("Pozovi odabrane")
+                Text("Invite")
             }
 
             errorMessage?.let {

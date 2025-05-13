@@ -14,7 +14,7 @@ fun MajorityVotingUI(
     onRate: (Long, Int) -> Unit
 ) {
     Column {
-        Text("Odaberi rješenje:", style = MaterialTheme.typography.titleMedium)
+        Text("Choose a solution:", style = MaterialTheme.typography.titleMedium)
 
         state.solutions.forEach { solution ->
             val isSelected = state.ratings[solution.id] == 1

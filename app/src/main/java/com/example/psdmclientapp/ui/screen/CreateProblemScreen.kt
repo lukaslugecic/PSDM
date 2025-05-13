@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.psdmclientapp.enum.DecisionMakingMethod
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
@@ -85,14 +86,14 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
             OutlinedTextField(
                 value = viewModel.title,
                 onValueChange = { viewModel.title = it },
-                label = { Text("Title") },
+                label = { Text("Problem Title") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = viewModel.description,
                 onValueChange = { viewModel.description = it },
-                label = { Text("Description") },
+                label = { Text("Problem Description") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -114,6 +115,11 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
                 selectedOption = decisionMakingMethods.find { it.id == viewModel.selectedDecisionMethodId }?.title,
                 onOptionSelected = { title ->
                     viewModel.selectedDecisionMethodId = decisionMakingMethods.find { it.title == title }?.id
+
+                    if (viewModel.selectedDecisionMethodId == DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER.id
+                        && "Weight" !in viewModel.attributeTitles) {
+                        viewModel.attributeTitles.add("Weight")
+                    }
                 }
             )
 
@@ -122,10 +128,15 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
             Text("Attributes", style = MaterialTheme.typography.titleMedium)
 
             viewModel.attributeTitles.forEachIndexed { index, title ->
+
+                val isWeightField = title == "Weight" &&  viewModel.selectedDecisionMethodId == DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER.id
+
                 OutlinedTextField(
                     value = title,
                     onValueChange = { newTitle ->
-                        viewModel.attributeTitles[index] = newTitle
+                        if(!isWeightField) {
+                            viewModel.attributeTitles[index] = newTitle
+                        }
                     },
                     label = { Text("Attribute ${index + 1}") },
                     modifier = Modifier.fillMaxWidth()
@@ -138,7 +149,12 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
                 }
                 if (viewModel.attributeTitles.isNotEmpty()) {
                     Button(
-                        onClick = { viewModel.attributeTitles.removeAt(viewModel.attributeTitles.lastIndex) },
+                        onClick = {
+                            if (viewModel.selectedDecisionMethodId == DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER.id && viewModel.attributeTitles.last() == "Weight") {
+                                return@Button
+                            }
+                            viewModel.attributeTitles.removeAt(viewModel.attributeTitles.lastIndex)
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                     ) {
                         Text("Remove Last")
@@ -151,7 +167,7 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
                 onClick = {
                     coroutineScope.launch {
                         viewModel.submit { session ->
-                            val json = Json.encodeToString(viewModel.attributeTitles.toList())
+                            val json = Json.encodeToString(viewModel.attributeTitles.map{ it.trim() }.toList())
                             val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
                             navController.navigate("inviteUsers/${session.problemId}/${session.id}/$encodedAttributes")
                         }

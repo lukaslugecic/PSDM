@@ -31,7 +31,7 @@ class VotingViewModel @Inject constructor(
     fun loadSolutions() {
         viewModelScope.launch {
             val session = ApiClient.sessionApi.getSessionDetails(sessionId)
-            val solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
+            var solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
 
             val decisionMethod = session.body()?.session?.decisionMakingMethodId?.let {
                 DecisionMakingMethod.entries.first { m -> m.id == it }
