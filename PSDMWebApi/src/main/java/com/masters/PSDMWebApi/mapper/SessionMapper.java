@@ -7,6 +7,9 @@ import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.model.ProblemSolvingMethod;
 import com.masters.PSDMWebApi.model.Session;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class SessionMapper {
 
     public static SessionDTO toDTO(Session session) {
@@ -17,6 +20,7 @@ public class SessionMapper {
         dto.setProblemId(session.getProblem().getId());
         dto.setProblemSolvingMethodId(session.getProblemSolvingMethod().getId());
         dto.setDecisionMakingMethodId(session.getDecisionMakingMethod().getId());
+        dto.setDuration(session.getDuration().toSeconds());
         dto.setStart(session.getStart());
         dto.setEnd(session.getEnd());
         if(session.getParentSession() != null){
@@ -33,6 +37,7 @@ public class SessionMapper {
         entity.setProblem(new Problem(dto.getProblemId()));
         entity.setProblemSolvingMethod(new ProblemSolvingMethod(dto.getProblemSolvingMethodId()));
         entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
+        entity.setDuration(Duration.ofSeconds(dto.getDuration()));
         entity.setStart(dto.getStart());
         entity.setEnd(dto.getEnd());
         if(dto.getParentSessionId() != null){
@@ -48,6 +53,8 @@ public class SessionMapper {
         entity.setProblem(new Problem(dto.getProblemId()));
         entity.setProblemSolvingMethod(new ProblemSolvingMethod(dto.getProblemSolvingMethodId()));
         entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
+        entity.setDuration(Duration.ofSeconds(dto.getDuration()));
+        entity.setStart(LocalDateTime.now());
         if(dto.getParentSessionId() != null){
             entity.setParentSession(new Session(dto.getParentSessionId()));
         }

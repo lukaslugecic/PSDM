@@ -14,7 +14,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -51,39 +50,10 @@ public class SessionServiceImpl implements SessionService {
                         SessionDetailsDTO detailsDTO = new SessionDetailsDTO(
                                 ProblemMapper.toDTO(session.getProblem()),
                                 SessionMapper.toDTO(session),
-                                session.getParentSession() != null ? session.getParentSession().getId() : null,
-                                getIdeaGenerationDuration(session)
+                                session.getParentSession() != null ? session.getParentSession().getId() : null
                         );
                         return Optional.of(detailsDTO);
                 });
-    }
-
-    private Long getIdeaGenerationDuration(Session session) {
-        switch (session.getProblemSolvingMethod().getTitle()) {
-            case "Brainstorming" -> {
-                return getDurationInSecondsFromStepTitle(session,"Group Idea Generation");
-            }
-            case "Brainwriting", "Nominal group technique" -> {
-                return getDurationInSecondsFromStepTitle(session,"Individual Idea Generation");
-            }
-            case "Speedstorming" -> {
-                return getDurationInSecondsFromStepTitle(session,"Pair Idea Generation");
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + session.getDecisionMakingMethod().getTitle());
-        }
-    }
-
-    private Long getDurationInSecondsFromStepTitle(Session session, String stepTitle) {
-        return session.getProblemSolvingMethod()
-                .getMethodSteps().stream()
-                .filter(problemSolvingMethodStep ->
-                        problemSolvingMethodStep.getStep().getTitle().equals(stepTitle))
-                .findAny()
-                .map(
-                        ProblemSolvingMethodStep::getDuration
-                )
-                .map(Duration::toSeconds)
-                .orElse(null);
     }
 
     @Override
@@ -99,6 +69,7 @@ public class SessionServiceImpl implements SessionService {
         Session session = SessionMapper.toEntity(dto.getSession());
         session.setProblem(problem);
 
+        // TODO PROVJERITI TEBA LI OVO
         Optional<ProblemSolvingMethod> methodOpt =
                 problemSolvingMethodService.getProblemSolvingMethodById(dto.getSession().getProblemSolvingMethodId());
         if (methodOpt.isEmpty()) {
@@ -106,7 +77,6 @@ public class SessionServiceImpl implements SessionService {
         }
         session.setProblemSolvingMethod(methodOpt.get());
 
-        session.setStart(LocalDateTime.now());
         session.setEnd(calculateEndOfSession(session));
         return sessionRepository.save(session);
     }
@@ -131,14 +101,13 @@ public class SessionServiceImpl implements SessionService {
 
     private LocalDateTime calculateEndOfBrainstorimingSession(Session session) {
         return session.getStart()
-                .plusSeconds(getIdeaGenerationDuration(session))
-                .plusSeconds(getDurationInSecondsFromStepTitle(session,"Idea Clarification"));
+                .plusSeconds(session.getDuration().toSeconds());
+               // .plusSeconds(getDurationInSecondsFromStepTitle(session,"Idea Clarification"));
     }
 
     private LocalDateTime calculateEndOfSpeedstormingSession(Session session) {
         LocalDateTime start = session.getStart();
-        Long x = getIdeaGenerationDuration(session);
-        if (x == null) return start;
+        long x = session.getDuration().toSeconds();
 
         int n;
         if(session.getUsers() == null || session.getUsers().size() < 2) {
@@ -160,13 +129,13 @@ public class SessionServiceImpl implements SessionService {
             return session.getStart();
         }
         return session.getStart()
-                .plusSeconds(getIdeaGenerationDuration(session) * session.getUsers().size());
+                .plusSeconds(session.getDuration().toSeconds() * session.getUsers().size());
     }
 
     private LocalDateTime calculateEndOfNominalGroupSession(Session session) {
         return session.getStart()
-                .plusSeconds(getIdeaGenerationDuration(session))
-                .plusSeconds(getDurationInSecondsFromStepTitle(session,"Idea Clarification"));
+                .plusSeconds(session.getDuration().toSeconds());
+              //  .plusSeconds(getDurationInSecondsFromStepTitle(session,"Idea Clarification"));
     }
 
 
@@ -222,10 +191,9 @@ public class SessionServiceImpl implements SessionService {
     }
 
     private void handleNominalGroupTechniqueSubsessions(Session session) {
-        Long duration = getIdeaGenerationDuration(session);
 
         for (User user : session.getUsers()) {
-            Session subsession = createSubSession(session, session.getStart(), duration);
+            Session subsession = createSubSession(session, session.getStart(), session.getDuration().toSeconds());
             addUsersToSession(subsession, List.of(user));
         }
 
@@ -234,8 +202,8 @@ public class SessionServiceImpl implements SessionService {
 
     private void handleSpeedstormingSubsessions(Session session) {
         List<User> participants = session.getUsers();
-        Long duration = getIdeaGenerationDuration(session);
-        if (duration == null || participants == null || participants.size() < 2) return;
+        long duration = session.getDuration().toSeconds();
+        if (participants == null || participants.size() < 2) return;
 
         List<List<Pair<User, User>>> slots = getSlots(participants);
 
@@ -291,7 +259,7 @@ public class SessionServiceImpl implements SessionService {
         List<User> participants = session.getUsers();
         List<Session> subsessions = new ArrayList<>();
 
-        Long duration = getIdeaGenerationDuration(session);
+        long duration = session.getDuration().toSeconds();
 
         log.info("Got duration: {}", duration);
 
@@ -325,6 +293,7 @@ public class SessionServiceImpl implements SessionService {
         Session subSession = new Session();
         subSession.setStart(start);
         subSession.setEnd(start.plusSeconds(duration));
+        subSession.setDuration(parentSession.getDuration());
         subSession.setDecisionMakingMethod(parentSession.getDecisionMakingMethod());
         subSession.setProblemSolvingMethod(parentSession.getProblemSolvingMethod());
         subSession.setProblem(parentSession.getProblem());

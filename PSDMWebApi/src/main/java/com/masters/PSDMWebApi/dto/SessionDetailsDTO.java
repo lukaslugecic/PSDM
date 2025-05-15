@@ -9,5 +9,4 @@ public class SessionDetailsDTO {
     private ProblemDTO problem;
     private SessionDTO session;
     private Long parentSessionId;
-    private Long duration;
 }

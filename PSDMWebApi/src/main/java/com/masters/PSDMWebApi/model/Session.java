@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -28,6 +29,9 @@ public class Session {
     @ManyToOne
     @JoinColumn(name = "problem_id")
     private Problem problem;
+
+    @Column(name = "duration", nullable = false)
+    private Duration duration;
 
     @ManyToOne
     @JoinColumn(name = "problem_solving_method_id")
