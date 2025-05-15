@@ -52,7 +52,7 @@ class IdeaGroupingViewModel @Inject constructor(
             )
 
             state = state.copy(
-                duration = sessionDetails.body()?.duration,
+                duration = sessionDetails.body()?.session?.duration,
                 solutions = solutions,
                 currentUserId = currentUser.id,
                 isLoading = false,

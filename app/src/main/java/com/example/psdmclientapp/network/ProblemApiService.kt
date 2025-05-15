@@ -1,12 +1,9 @@
 package com.example.psdmclientapp.network
 
-import com.example.psdmclientapp.model.request.ProblemRequest
-import com.example.psdmclientapp.model.ProblemResponse
-import retrofit2.http.Body
-import retrofit2.http.POST
+import com.example.psdmclientapp.model.ProblemWithSolutionResponse
+import retrofit2.http.GET
 
 interface ProblemApiService {
-
-    @POST("problem")
-    suspend fun createProblem(@Body request: ProblemRequest): ProblemResponse
+    @GET("problems/with-solutions")
+    suspend fun getUserProblemsWithSolutions(): List<ProblemWithSolutionResponse>
 }

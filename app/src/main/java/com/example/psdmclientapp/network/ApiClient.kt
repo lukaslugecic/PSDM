@@ -16,6 +16,7 @@ object ApiClient {
     val solutionApi: SolutionApiService = retrofit.create(SolutionApiService::class.java)
     val methodApi: MethodApiService = retrofit.create(MethodApiService::class.java)
     val voteApi: VoteApiService = retrofit.create(VoteApiService::class.java)
+    val problemApi: ProblemApiService = retrofit.create(ProblemApiService::class.java)
 
 }
 

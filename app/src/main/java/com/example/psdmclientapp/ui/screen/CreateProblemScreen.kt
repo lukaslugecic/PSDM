@@ -123,6 +123,30 @@ fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProbl
                 }
             )
 
+            Text("Session Duration", style = MaterialTheme.typography.titleMedium)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = viewModel.durationHours,
+                    onValueChange = { viewModel.durationHours = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = { Text("HH") },
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = viewModel.durationMinutes,
+                    onValueChange = { viewModel.durationMinutes = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = { Text("MM") },
+                    modifier = Modifier.weight(1f)
+                )
+                OutlinedTextField(
+                    value = viewModel.durationSeconds,
+                    onValueChange = { viewModel.durationSeconds = it.filter { ch -> ch.isDigit() }.take(2) },
+                    label = { Text("SS") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+
             HorizontalDivider()
 
             Text("Attributes", style = MaterialTheme.typography.titleMedium)

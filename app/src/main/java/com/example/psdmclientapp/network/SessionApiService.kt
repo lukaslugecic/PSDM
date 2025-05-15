@@ -19,10 +19,4 @@ interface SessionApiService {
 
     @POST("session/addUsers")
     suspend fun inviteUsers(@Body request: InviteUserRequest)
-
-    @GET("session/{sessionId}/turn")
-    suspend fun getCurrentTurnUserId(@Path("sessionId") sessionId: Long): Long
-
-    @POST("session/{sessionId}/turn/next")
-    suspend fun advanceTurn(@Path("sessionId") sessionId: Long)
 }

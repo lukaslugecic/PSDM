@@ -71,7 +71,7 @@ class IdeaGenerationViewModel @Inject constructor(
                     ?: ProblemSolvingMethod.BRAINSTORMING,
                 decisionMakingMethod = DecisionMakingMethod.fromId(decisionMakingMethodId)
                     ?: DecisionMakingMethod.AVERAGE_WINNER,
-                duration = sessionDetails.body()?.duration
+                duration = sessionDetails.body()?.session?.duration
             )
 
             nextPage = when (state.problemSolvingMethod) {

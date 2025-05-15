@@ -17,6 +17,7 @@ import com.example.psdmclientapp.ui.screen.SessionLobbyScreen
 import com.example.psdmclientapp.ui.screen.CreateProblemScreen
 import com.example.psdmclientapp.ui.screen.DecisionResultScreen
 import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
+import com.example.psdmclientapp.ui.screen.MyProblemsScreen
 import com.example.psdmclientapp.ui.screen.NominalGroupScreen
 import com.example.psdmclientapp.ui.screen.VotingScreen
 import kotlinx.serialization.json.Json
@@ -41,6 +42,8 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("mainMenu") { MainMenuScreen(navController) }
         composable("createProblem") { CreateProblemScreen(navController) }
+
+        composable("myProblems") { MyProblemsScreen(navController) }
 
         composable(
             route = "inviteUsers/{problemId}/{sessionId}/{attributes}",

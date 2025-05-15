@@ -4,5 +4,4 @@ data class SessionDetailsResponse(
     val problem: ProblemResponse,
     val session: SessionResponse,
     val parentSessionId: Long?,
-    val duration: Long
 )

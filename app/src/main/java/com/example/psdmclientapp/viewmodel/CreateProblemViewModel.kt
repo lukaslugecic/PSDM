@@ -30,6 +30,11 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
     var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodResponse>>(emptyList())
     var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodResponse>>(emptyList())
 
+    var durationHours by mutableStateOf("")
+    var durationMinutes by mutableStateOf("")
+    var durationSeconds by mutableStateOf("")
+
+
     val attributeTitles = mutableStateListOf<String>()
 
     var isLoading by mutableStateOf(false)
@@ -63,6 +68,16 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
             isLoading = true
             errorMessage = null
 
+            val totalDurationSeconds = (durationHours.toLongOrNull() ?: 0) * 3600 +
+                    (durationMinutes.toLongOrNull() ?: 0) * 60 +
+                    (durationSeconds.toLongOrNull() ?: 0)
+
+            if (totalDurationSeconds <= 0) {
+                errorMessage = "Session duration must be greater than 0."
+                return
+            }
+
+
             val session = ApiClient.sessionApi.createProblemAndSession(
                 CreateProblemAndSessionRequest(
                     ProblemRequest(
@@ -73,7 +88,8 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
                     SessionRequest(
                         problemId = 1,
                         problemSolvingMethodId = selectedSolvingMethodId!!,
-                        decisionMakingMethodId = selectedDecisionMethodId!!
+                        decisionMakingMethodId = selectedDecisionMethodId!!,
+                        duration = totalDurationSeconds // TODO
                     )
                 )
             )
