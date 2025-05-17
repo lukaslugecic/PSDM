@@ -26,20 +26,4 @@ public class ProblemSolvingMethodServiceImpl implements ProblemSolvingMethodServ
     public Optional<ProblemSolvingMethod> getProblemSolvingMethodById(Long id) {
         return sessionRepository.findById(id);
     }
-
-    @Override
-    public ProblemSolvingMethod createProblemSolvingMethod(ProblemSolvingMethod session) {
-        return sessionRepository.save(session);
-    }
-
-    @Override
-    public ProblemSolvingMethod updateProblemSolvingMethod(Long id, ProblemSolvingMethod session) {
-        session.setId(id);
-        return sessionRepository.save(session);
-    }
-
-    @Override
-    public void deleteProblemSolvingMethod(Long id) {
-        sessionRepository.deleteById(id);
-    }
 }

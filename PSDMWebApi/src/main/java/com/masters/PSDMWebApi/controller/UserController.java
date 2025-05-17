@@ -27,14 +27,6 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(UserMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/currentSubSession/{id}")
     public ResponseEntity<Long> getCurrentSubSession(@PathVariable Long id) {
         Long res = userService.getCurrentSessionId(id, true);

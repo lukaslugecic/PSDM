@@ -1,5 +1,6 @@
 package com.masters.PSDMWebApi.service.impl;
 
+import com.masters.PSDMWebApi.dto.SolutionScoreDTO;
 import com.masters.PSDMWebApi.dto.request.GroupSolutionRequestDTO;
 import com.masters.PSDMWebApi.mapper.SolutionMapper;
 import com.masters.PSDMWebApi.model.Session;
@@ -14,10 +15,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,31 +28,10 @@ public class SolutionServiceImpl implements SolutionService {
     private final AttributeService attributeService;
 
     @Override
-    public List<Solution> getAllSolutions() {
-        return solutionRepository.findAll();
-    }
-
-    @Override
-    public Optional<Solution> getSolutionById(Long id) {
-        return solutionRepository.findById(id);
-    }
-
-    @Override
     @Transactional
     public Solution createSolution(Solution solution) {
         log.info("Saving solution with title: {}", solution.getTitle());
         return solutionRepository.save(solution);
-    }
-
-    @Override
-    public Solution updateSolution(Long id, Solution solution) {
-        solution.setId(id);
-        return solutionRepository.save(solution);
-    }
-
-    @Override
-    public void deleteSolution(Long id) {
-        solutionRepository.deleteById(id);
     }
 
     @Override
@@ -86,31 +63,27 @@ public class SolutionServiceImpl implements SolutionService {
 
     @Override
     @Transactional
-    public Solution getWinnigSolution(Long sessionId){
-        return solutionRepository.findById(Objects.requireNonNull(getBestSolution(sessionId)))
-                .orElse(null);
-    }
-
-
-    private Long getBestSolution(Long id) {
-        Optional<Session> sessionOptional = sessionService.getSessionById(id);
+    public List<SolutionScoreDTO> getBestSolutions(Long sessionId){
+        Optional<Session> sessionOptional = sessionService.getSessionById(sessionId);
         if (sessionOptional.isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         Session session = sessionOptional.get();
 
         return switch (session.getDecisionMakingMethod().getTitle()) {
-            case "Average winner" -> getAverageWinnerFinalSolution(session).orElse(null);
-            case "Weighted average winner" -> getWeightedAverageWinnerFinalSolution(session).orElse(null);
-            case "Borda ranking" -> getBordaRankingFinalSolution(session).orElse(null);
-            case "Majority rule" -> getMajorityRuleFinalSolution(session).orElse(null);
+            case "Average winner" -> getAverageWinnerFinalSolution(session);
+            case "Weighted average winner" -> getWeightedAverageWinnerFinalSolution(session);
+            case "Borda ranking" -> getBordaRankingFinalSolution(session);
+            case "Majority rule" -> getMajorityRuleFinalSolution(session);
             default -> throw new IllegalStateException("Unexpected value: " + session.getDecisionMakingMethod().getTitle());
         };
     }
 
 
-    private Optional<Long> getAverageWinnerFinalSolution(Session session) {
-        var scores = getSolutionsByParentSessionIdOrSessionId(session.getId()).stream()
+    private List<SolutionScoreDTO> getAverageWinnerFinalSolution(Session session) {
+        var scores = getSolutionsByParentSessionIdOrSessionId(
+                session.getId())
+                .stream()
                 .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
                 .collect(Collectors.toMap(
                         Solution::getId,
@@ -120,12 +93,16 @@ public class SolutionServiceImpl implements SolutionService {
                                 .orElse(0.0)
                 ));
 
-        log.info("Calculated scores for average winner: {}", scores);
-        return getUniqueMaxEntry(scores); // TODO nije potrebno jer ni u jednom slucaju vise njih ne moze imati iznad thresholdas
+
+        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
+        singleBestSolutionId.ifPresent(this::chooseWinningSolution);
+        log.info("Single best solution for average winner found: {}", singleBestSolutionId);
+
+        return toScoredDTOList(scores);
     }
 
 
-    private Optional<Long> getMajorityRuleFinalSolution(Session session) {
+    private List<SolutionScoreDTO> getMajorityRuleFinalSolution(Session session) {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
         // TODO check if voter voted for only one solution
 
@@ -148,12 +125,15 @@ public class SolutionServiceImpl implements SolutionService {
                 .filter(entry -> entry.getValue() >= majorityThreshold)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        log.info("Calculated scores for majority threshold: {}", scoresOverThreshold);
-        return getUniqueMaxEntry(scoresOverThreshold);
+        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scoresOverThreshold);
+        singleBestSolutionId.ifPresent(this::chooseWinningSolution);
+        log.info("Single best solution for majority rule found: {}", singleBestSolutionId);
+
+        return toScoredDTOList(scores);
     }
 
 
-    private Optional<Long> getBordaRankingFinalSolution(Session session) {
+    private List<SolutionScoreDTO> getBordaRankingFinalSolution(Session session) {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
         int totalSolutions = solutions.size();
 
@@ -170,11 +150,16 @@ public class SolutionServiceImpl implements SolutionService {
                                 .sum()
                 ));
 
-        log.info("Calculated scores for borda ranking: {}", scores);
-        return getUniqueMaxEntry(scores);
+
+
+        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
+        singleBestSolutionId.ifPresent(this::chooseWinningSolution);
+        log.info("Single best solution for Borda ranking found: {}", singleBestSolutionId);
+
+        return toScoredDTOList(scores);
     }
 
-    private Optional<Long> getWeightedAverageWinnerFinalSolution(Session session) {
+    private List<SolutionScoreDTO> getWeightedAverageWinnerFinalSolution(Session session) {
 
         Double sumOfWeights = attributeService.getAllWeightsBySessionId(session.getId())
                 .stream()
@@ -188,8 +173,12 @@ public class SolutionServiceImpl implements SolutionService {
                         s -> weightedAverage(s, sumOfWeights)
                 ));
 
-        log.info("Calculated scores for weighted average: {}", scores);
-        return getUniqueMaxEntry(scores);
+
+        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
+        singleBestSolutionId.ifPresent(this::chooseWinningSolution);
+        log.info("Single best solution for weighted average winner: {}", singleBestSolutionId);
+
+        return toScoredDTOList(scores);
     }
 
     private double weightedAverage(Solution solution, Double sumOfWeights) {
@@ -203,6 +192,18 @@ public class SolutionServiceImpl implements SolutionService {
         return weightedSum / sumOfWeights;
     }
 
+    private <ID, S extends Comparable<S>> List<SolutionScoreDTO> toScoredDTOList(Map<ID, S> scores) {
+        int BEST_SOLUTIONS_COUNT = 5;
+        return scores.entrySet().stream()
+                .map(entry -> new SolutionScoreDTO(
+                        SolutionMapper.toDTO(solutionRepository
+                                .findById((Long) entry.getKey())
+                                .orElseThrow(() -> new RuntimeException("Could not find solution"))),
+                        (Double) entry.getValue()))
+                .sorted(Comparator.comparing(SolutionScoreDTO::getScore).reversed())
+                .limit(BEST_SOLUTIONS_COUNT)
+                .toList();
+    }
 
 
     private <K, V extends Comparable<V>> Optional<K> getUniqueMaxEntry(Map<K, V> scores) {
@@ -217,11 +218,16 @@ public class SolutionServiceImpl implements SolutionService {
                 .entrySet().stream()
                 .max(Map.Entry.comparingByKey())
                 .filter(e -> e.getValue().size() == 1)
-                .map(e -> {
-                            log.info("Max Entry: {}", e.getKey());
-                            return e.getValue().getFirst();
-                        }
-                );
+                .map(e -> e.getValue().getFirst());
+    }
+
+    private void chooseWinningSolution(Long solutionId) {
+        solutionRepository.findById(solutionId)
+                .map(solution -> {
+                    solution.setChosen(true);
+                    return solutionRepository.save(solution);
+                })
+                .orElseThrow(() -> new RuntimeException("Solution not found"));
     }
 }
 

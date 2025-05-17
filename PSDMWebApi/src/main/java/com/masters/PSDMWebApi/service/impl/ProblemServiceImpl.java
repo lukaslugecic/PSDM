@@ -1,5 +1,8 @@
 package com.masters.PSDMWebApi.service.impl;
 
+import com.masters.PSDMWebApi.dto.ProblemDetailsDTO;
+import com.masters.PSDMWebApi.mapper.ProblemMapper;
+import com.masters.PSDMWebApi.mapper.SolutionMapper;
 import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.repository.ProblemRepository;
 import com.masters.PSDMWebApi.service.ProblemService;
@@ -7,7 +10,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -16,28 +18,22 @@ public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
 
     @Override
-    public List<Problem> getAllProblems() {
-        return problemRepository.findAll();
-    }
+    public List<ProblemDetailsDTO> getAllProblemsWithSolutionByUserId(Long userId) {
+        List<Problem> problems = problemRepository.findByModeratorId(userId);
 
-    @Override
-    public Optional<Problem> getProblemById(Long id) {
-        return problemRepository.findById(id);
+        return problems.stream().map(
+                problem -> new ProblemDetailsDTO(
+                        ProblemMapper.toDTO(problem),
+                        SolutionMapper.toDTO(problem.getSolutions().stream()
+                                .filter(solution -> solution.getChosen().equals(true))
+                                .findFirst().orElse(null)
+                        )
+                )
+        ).toList();
     }
 
     @Override
     public Problem createProblem(Problem problem) {
         return problemRepository.save(problem);
-    }
-
-    @Override
-    public Problem updateProblem(Long id, Problem problem) {
-        problem.setId(id);
-        return problemRepository.save(problem);
-    }
-
-    @Override
-    public void deleteProblem(Long id) {
-        problemRepository.deleteById(id);
     }
 }

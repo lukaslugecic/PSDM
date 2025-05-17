@@ -1,6 +1,7 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.SolutionDTO;
+import com.masters.PSDMWebApi.dto.SolutionScoreDTO;
 import com.masters.PSDMWebApi.dto.request.GroupSolutionRequestDTO;
 import com.masters.PSDMWebApi.dto.request.SolutionRequestDTO;
 import com.masters.PSDMWebApi.mapper.SolutionMapper;
@@ -22,14 +23,6 @@ public class SolutionController {
 
     private final SolutionService solutionService;
 
-    @GetMapping
-    public List<SolutionDTO> getAllSolutions() {
-        return solutionService.getAllSolutions()
-                .stream()
-                .map(SolutionMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
     @GetMapping("/session/{sessionId}")
     public List<SolutionDTO> getAllSolutionsBySessionId(@PathVariable Long sessionId) {
         return solutionService.getSolutionsBySessionId(sessionId)
@@ -48,13 +41,6 @@ public class SolutionController {
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SolutionDTO> getSolutionById(@PathVariable Long id) {
-        return solutionService.getSolutionById(id)
-                .map(SolutionMapper::toDTO)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @PostMapping
     public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionRequestDTO dto) {
@@ -71,24 +57,9 @@ public class SolutionController {
                 )
         );
     }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<SolutionDTO> updateSolution(@PathVariable Long id, @RequestBody SolutionDTO dto) {
-        Solution solutionToUpdate = SolutionMapper.toEntity(dto);
-        Solution updated = solutionService.updateSolution(id, solutionToUpdate);
-        return ResponseEntity.ok(SolutionMapper.toDTO(updated));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSolution(@PathVariable Long id) {
-        solutionService.deleteSolution(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/winningSolution/{sessionId}")
-    public ResponseEntity<SolutionDTO> getWinningSolution(@PathVariable Long sessionId) {
-        Solution solution = solutionService.getWinnigSolution(sessionId);
-        return ResponseEntity.ok(SolutionMapper.toDTO(solution));
+    @GetMapping("/bestSolutions/{sessionId}")
+    public List<SolutionScoreDTO> getBestSolutions(@PathVariable Long sessionId) {
+        return solutionService.getBestSolutions(sessionId);
     }
 }
 

@@ -34,11 +34,6 @@ public class SessionServiceImpl implements SessionService {
     private final UserService userService;
 
     @Override
-    public List<Session> getAllSessions() {
-        return sessionRepository.findAll();
-    }
-
-    @Override
     public Optional<Session> getSessionById(Long id) {
         return sessionRepository.findById(id);
     }
@@ -54,11 +49,6 @@ public class SessionServiceImpl implements SessionService {
                         );
                         return Optional.of(detailsDTO);
                 });
-    }
-
-    @Override
-    public Session createSession(Session session) {
-        return sessionRepository.save(session);
     }
 
     @Override
@@ -138,17 +128,6 @@ public class SessionServiceImpl implements SessionService {
               //  .plusSeconds(getDurationInSecondsFromStepTitle(session,"Idea Clarification"));
     }
 
-
-    @Override
-    public Session updateSession(Long id, Session session) {
-        session.setId(id);
-        return sessionRepository.save(session);
-    }
-
-    @Override
-    public void deleteSession(Long id) {
-        sessionRepository.deleteById(id);
-    }
 
     @Override
     @Transactional

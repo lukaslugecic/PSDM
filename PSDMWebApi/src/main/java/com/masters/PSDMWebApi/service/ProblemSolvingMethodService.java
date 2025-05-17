@@ -8,10 +8,4 @@ public interface ProblemSolvingMethodService {
     List<ProblemSolvingMethod> getAllProblemSolvingMethods();
 
     Optional<ProblemSolvingMethod> getProblemSolvingMethodById(Long id);
-
-    ProblemSolvingMethod createProblemSolvingMethod(ProblemSolvingMethod session);
-
-    ProblemSolvingMethod updateProblemSolvingMethod(Long id, ProblemSolvingMethod session);
-
-    void deleteProblemSolvingMethod(Long id);
 }
