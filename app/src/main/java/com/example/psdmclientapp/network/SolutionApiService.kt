@@ -1,6 +1,7 @@
 package com.example.psdmclientapp.network
 
 import com.example.psdmclientapp.model.SolutionResponse
+import com.example.psdmclientapp.model.SolutionScoreResponse
 import com.example.psdmclientapp.model.request.GroupSolutionRequest
 import com.example.psdmclientapp.model.request.SolutionRequest
 import retrofit2.http.Body
@@ -22,6 +23,6 @@ interface SolutionApiService {
     @POST("solution/group")
     suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : SolutionResponse
 
-    @GET("solution/winningSolution/{sessionId}")
-    suspend fun getWinningSolution(@Path("sessionId") sessionId: Long): SolutionResponse
+    @GET("solution/bestSolutions/{sessionId}")
+    suspend fun getBestSolutions(@Path("sessionId") sessionId: Long): List<SolutionScoreResponse>
 }

@@ -1,6 +1,7 @@
 package com.example.psdmclientapp.ui.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -23,59 +24,71 @@ fun VotingScreen(
 ) {
     val state = viewModel.state
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        when (state.decisionMethod) {
-            DecisionMakingMethod.MAJORITY_RULE -> {
-                MajorityVotingUI(
-                    state = state,
-                    onRate = { id, rating -> viewModel.setRating(id, rating) }
-                )
-            }
-
-            DecisionMakingMethod.AVERAGE_WINNER -> {
-                AverageVotingUI(
-                    state = state,
-                    onRate = { id, rating -> viewModel.setRating(id, rating) }
-                )
-            }
-
-            DecisionMakingMethod.BORDA_RANKING -> {
-                BordaVotingUI(
-                    state = state,
-                    onRate = { id, rating -> viewModel.setRating(id, rating) }
-                )
-            }
-
-            DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER -> {
-                AverageVotingUI(
-                    state = state,
-                    onRate = { id, rating -> viewModel.setRating(id, rating) }
-                )
-            }
-        }
-
-        Button(
-            onClick = {
-                viewModel.submitVotes {
-                    navController.navigate("decisionResult/$problemId/$sessionId")
+    Scaffold(
+        bottomBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Button(
+                    onClick = {
+                        viewModel.submitVotes {
+                            navController.navigate("decisionResult/$problemId/$sessionId")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Submit Vote")
                 }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Submit Vote")
-        }
 
-        state.errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
+                state.errorMessage?.let {
+                    Text(it, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                when (state.decisionMethod) {
+                    DecisionMakingMethod.MAJORITY_RULE -> {
+                        MajorityVotingUI(
+                            state = state,
+                            onRate = { id, rating -> viewModel.setRating(id, rating) }
+                        )
+                    }
+
+                    DecisionMakingMethod.AVERAGE_WINNER -> {
+                        AverageVotingUI(
+                            state = state,
+                            onRate = { id, rating -> viewModel.setRating(id, rating) }
+                        )
+                    }
+
+                    DecisionMakingMethod.BORDA_RANKING -> {
+                        BordaVotingUI(
+                            state = state,
+                            onRate = { id, rating -> viewModel.setRating(id, rating) }
+                        )
+                    }
+
+                    DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER -> {
+                        AverageVotingUI(
+                            state = state,
+                            onRate = { id, rating -> viewModel.setRating(id, rating) }
+                        )
+                    }
+                }
+            }
         }
     }
 }
-
 
 
 

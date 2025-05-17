@@ -13,23 +13,72 @@ fun MajorityVotingUI(
     state: VotingState,
     onRate: (Long, Int) -> Unit
 ) {
-    Column {
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
         Text("Choose a solution:", style = MaterialTheme.typography.titleMedium)
 
         state.solutions.forEach { solution ->
             val isSelected = state.ratings[solution.id] == 1
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
+                    .padding(vertical = 8.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
             ) {
-                RadioButton(
-                    selected = isSelected,
-                    onClick = { onRate(solution.id, 1) }
-                )
-                Text(solution.title)
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = {
+                                // Toggle selection:
+                                if (isSelected) {
+                                    // Unselect this solution
+                                    onRate(solution.id, 0)
+                                } else {
+                                    // Select this solution and unselect others
+                                    state.solutions.forEach { s ->
+                                        onRate(s.id, if (s.id == solution.id) 1 else 0)
+                                    }
+                                }
+                            }
+                        )
+                        Text(
+                            text = solution.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+
+                    if (solution.attributes.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Attributes:",
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        solution.attributes.forEach { attr ->
+                            Text(
+                                text = "• ${attr.title}: ${attr.value}",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(start = 16.dp)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = "No attributes provided.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 16.dp)
+                        )
+                    }
+                }
             }
         }
     }

@@ -18,92 +18,98 @@ fun DecisionResultScreen(
     sessionId: Long,
     viewModel: DecisionResultViewModel = viewModel()
 ) {
+    val scoredSolutions = viewModel.scoredSolutions
+    val winningSolution = viewModel.winningSolution
+
+    LaunchedEffect(Unit) {
+        viewModel.determineWinner()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val winningSolution = viewModel.winningSolution
+        Text(
+            text = if (winningSolution != null) "🎉 Chosen Solution" else "❌ No Unique Winner",
+            style = MaterialTheme.typography.headlineSmall,
+            color = if (winningSolution != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(bottom = 24.dp)
+        )
 
-        LaunchedEffect(Unit) {
-            viewModel.determineWinner()
-        }
+        if (scoredSolutions.isNotEmpty()) {
+            Text("Top 5 Solutions", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
 
+            scoredSolutions.forEach { scored ->
+                val solution = scored.solution
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    colors = if (solution.chosen)
+                        CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                    else
+                        CardDefaults.cardColors()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Title: ${solution.title}", style = MaterialTheme.typography.titleMedium)
+                            Text("Score: %.2f".format(scored.score), style = MaterialTheme.typography.bodySmall)
+                        }
 
-        if (winningSolution != null) {
-            Text(
-                text = "🎉 Selected Solution",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(6.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Title: ${winningSolution.title}", style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (winningSolution.attributes.isNotEmpty()) {
-                        Text(
-                            text = "Attributes:",
-                            style = MaterialTheme.typography.titleSmall,
-                            modifier = Modifier.padding(top = 12.dp, bottom = 8.dp)
-                        )
-
-                        winningSolution.attributes.forEach { attr ->
+                        if (solution.chosen) {
                             Text(
-                                text = "• ${attr.title}: ${attr.value}",
-                                style = MaterialTheme.typography.bodyMedium
+                                text = "✅ Chosen Solution",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                    } else {
-                        Text(
-                            text = "No attributes available.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (solution.attributes.isNotEmpty()) {
+                            Text("Attributes:", style = MaterialTheme.typography.titleSmall)
+                            solution.attributes.forEach {
+                                Text("• ${it.title}: ${it.value}", style = MaterialTheme.typography.bodyMedium)
+                            }
+                        } else {
+                            Text("No attributes", style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }
+
         } else {
-            Text(
-                text = "❌ No consensus reached!",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Text(
-                text = "You can try again by starting a new session.",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Text("No solutions available.")
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             if (winningSolution == null) {
-                Button(
-                    onClick = {
-                        navController.navigate("mainMenu") {
-                            popUpTo(0) { inclusive = true }
-                        }
+                Button(onClick = {
+                    navController.navigate("mainMenu") {
+                        popUpTo(0) { inclusive = true }
                     }
-                ){
+                }) {
                     Text("Start New Session")
                 }
             }
 
-            OutlinedButton(
-                onClick = {
-                    navController.navigate("mainMenu") {
-                        popUpTo(0) { inclusive = true }
-                    }
+            OutlinedButton(onClick = {
+                navController.navigate("mainMenu") {
+                    popUpTo(0) { inclusive = true }
                 }
-            ) {
+            }) {
                 Text("Return Home")
             }
         }
     }
 }
+

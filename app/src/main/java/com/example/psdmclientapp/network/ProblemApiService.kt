@@ -2,8 +2,9 @@ package com.example.psdmclientapp.network
 
 import com.example.psdmclientapp.model.ProblemWithSolutionResponse
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 interface ProblemApiService {
-    @GET("problems/with-solutions")
-    suspend fun getUserProblemsWithSolutions(): List<ProblemWithSolutionResponse>
+    @GET("problem/with-solutions/user/{id}")
+    suspend fun getUserProblemsWithSolutions(@Path("id") userId: Long): List<ProblemWithSolutionResponse>
 }

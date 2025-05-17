@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.AttributeResponse
 import com.example.psdmclientapp.model.ProblemWithSolutionResponse
 import com.example.psdmclientapp.model.SolutionResponse
-import com.example.psdmclientapp.network.ApiClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
