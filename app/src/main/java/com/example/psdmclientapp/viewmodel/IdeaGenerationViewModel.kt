@@ -37,6 +37,9 @@ class IdeaGenerationViewModel @Inject constructor(
     var nextPage by mutableStateOf<String>("")
         private set
 
+    var isWaitingForSession by mutableStateOf(false)
+        private set
+
     data class NavigationCommand(
         val route: String
     )
@@ -97,7 +100,7 @@ class IdeaGenerationViewModel @Inject constructor(
 
 
 
-    fun maybeNavigateAfterDelay(attributeTitles: List<String>, problemId: Long, sessionId: Long) {
+    fun navigateAfterDelay(attributeTitles: List<String>, problemId: Long, sessionId: Long) {
         viewModelScope.launch {
             state.duration?.let { durationInSeconds ->
                 delay(durationInSeconds * 1000)
@@ -108,9 +111,32 @@ class IdeaGenerationViewModel @Inject constructor(
                 val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
 
                 if (state.parentSessionId != null) {
-                    val newSessionId = runCatching {
-                        ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
-                    }.getOrNull()
+                    var newSessionId: Long? = null
+                    var parentStillRunning = true
+
+                    isWaitingForSession = true
+
+                    // Repeat check until parent session ends or subsession is found
+                    while (parentStillRunning && newSessionId == null) {
+                        // Try to get subsession
+                        newSessionId = runCatching {
+                            ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
+                        }.getOrNull()
+
+                        if (newSessionId == null) {
+                            // Check if parent is still running
+                            parentStillRunning = runCatching {
+                                ApiClient.userApi.checkParentSession(state.currentUserId!!)
+                            }.getOrDefault(false)
+
+                            if (parentStillRunning) {
+
+                                delay(durationInSeconds * 1000)
+                            }
+                        }
+                    }
+
+                    isWaitingForSession = false
 
                     val route = if (newSessionId != null) {
                         "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
@@ -126,6 +152,7 @@ class IdeaGenerationViewModel @Inject constructor(
             }
         }
     }
+
 
 
     fun refreshSolutions() {

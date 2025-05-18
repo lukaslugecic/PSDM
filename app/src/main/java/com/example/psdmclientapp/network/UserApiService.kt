@@ -11,4 +11,7 @@ interface UserApiService {
     @GET("user/currentSubSession/{userId}")
     suspend fun getCurrentSubSessionId(@Path("userId") userId: Long) : Long
 
+    @GET("user/checkParentSession/{userId}")
+    suspend fun checkParentSession(@Path("userId") userId: Long) : Boolean
+
 }

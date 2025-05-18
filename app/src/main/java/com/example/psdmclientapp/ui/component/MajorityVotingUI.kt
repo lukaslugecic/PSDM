@@ -14,6 +14,13 @@ fun MajorityVotingUI(
     onRate: (Long, Int) -> Unit
 ) {
 
+    LaunchedEffect(state.solutions) {
+        if (state.solutions.isNotEmpty() && state.ratings.none { it.value == 1 }) {
+            val default = state.solutions.first()
+            onRate(default.id, 1)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()

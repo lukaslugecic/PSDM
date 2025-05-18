@@ -11,15 +11,21 @@ import com.example.psdmclientapp.model.request.ProblemRequest
 import com.example.psdmclientapp.network.ApiClient
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
 import com.example.psdmclientapp.model.DecisionMakingMethodResponse
+import com.example.psdmclientapp.model.ProblemResponse
 import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
 import kotlinx.coroutines.launch
 import kotlin.Long
 
 @HiltViewModel
-class CreateProblemViewModel @Inject constructor() : ViewModel() {
+class CreateProblemViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    private val problemId: Long? = savedStateHandle["problemId"]
 
     var title by mutableStateOf("")
     var description by mutableStateOf("")
@@ -47,15 +53,20 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
     private fun fetchMethods() {
         viewModelScope.launch {
             try {
+                if(problemId != null) {
+                    val problemResponse : ProblemResponse = ApiClient.problemApi.getProblem(problemId)
+                    title = problemResponse.title
+                    description = problemResponse.description
+                }
+
                 problemSolvingMethods = ApiClient.methodApi.getSolvingSolvingMethods()
                 decisionMakingMethods = ApiClient.methodApi.getDecisionMakingMethods()
+
             } catch (e: Exception) {
                 errorMessage = "Failed to load methods: ${e.message}"
             }
         }
     }
-
-
 
     suspend fun submit(onSuccess: (SessionResponse) -> Unit) {
         val validationError = validateInput()
@@ -77,22 +88,32 @@ class CreateProblemViewModel @Inject constructor() : ViewModel() {
                 return
             }
 
-
-            val session = ApiClient.sessionApi.createProblemAndSession(
-                CreateProblemAndSessionRequest(
-                    ProblemRequest(
-                        title = title,
-                        description = description,
-                        moderatorId = 1L,
-                    ),
-                    SessionRequest(
-                        problemId = 1,
-                        problemSolvingMethodId = selectedSolvingMethodId!!,
-                        decisionMakingMethodId = selectedDecisionMethodId!!,
-                        duration = totalDurationSeconds // TODO
+            val session = if (problemId == null) {
+                ApiClient.sessionApi.createProblemAndSession(
+                    CreateProblemAndSessionRequest(
+                        ProblemRequest(
+                            title = title,
+                            description = description,
+                            moderatorId = 1L,
+                        ),
+                        SessionRequest(
+                            problemId = 0,
+                            problemSolvingMethodId = selectedSolvingMethodId!!,
+                            decisionMakingMethodId = selectedDecisionMethodId!!,
+                            duration = totalDurationSeconds
+                        )
                     )
                 )
-            )
+            } else {
+                ApiClient.sessionApi.createSession(
+                    SessionRequest(
+                        problemId = problemId,
+                        problemSolvingMethodId = selectedSolvingMethodId!!,
+                        decisionMakingMethodId = selectedDecisionMethodId!!,
+                        duration = totalDurationSeconds
+                    )
+                )
+            }
 
             onSuccess(session)
 

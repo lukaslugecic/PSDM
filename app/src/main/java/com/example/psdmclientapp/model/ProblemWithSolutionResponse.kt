@@ -1,8 +1,6 @@
 package com.example.psdmclientapp.model
 
 data class ProblemWithSolutionResponse(
-    val id: Long,
-    val title: String,
-    val description: String,
+    val problem: ProblemResponse,
     val solution: SolutionResponse?
 )

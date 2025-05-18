@@ -15,6 +15,7 @@ import com.example.psdmclientapp.ui.screen.MainMenuScreen
 import com.example.psdmclientapp.ui.screen.IdeaGenerationScreen
 import com.example.psdmclientapp.ui.screen.SessionLobbyScreen
 import com.example.psdmclientapp.ui.screen.CreateProblemScreen
+import com.example.psdmclientapp.ui.screen.CreateSessionScreen
 import com.example.psdmclientapp.ui.screen.DecisionResultScreen
 import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
 import com.example.psdmclientapp.ui.screen.MyProblemsScreen
@@ -42,6 +43,16 @@ fun AppNavGraph(startDestination: String = "mainMenu") {
     NavHost(navController = navController, startDestination = startDestination) {
         composable("mainMenu") { MainMenuScreen(navController) }
         composable("createProblem") { CreateProblemScreen(navController) }
+
+        composable(
+            route = "createSession/{problemId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType }
+            )
+        ) {
+            CreateSessionScreen(navController)
+        }
+
 
         composable("myProblems") { MyProblemsScreen(navController) }
 

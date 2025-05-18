@@ -14,11 +14,14 @@ import kotlinx.serialization.encodeToString
 
 
 @Composable
-fun CreateProblemScreen(navController: NavHostController, viewModel: CreateProblemViewModel = viewModel()) {
+fun CreateSessionScreen(
+    navController: NavHostController,
+    viewModel: CreateProblemViewModel = viewModel()
+) {
     val coroutineScope = rememberCoroutineScope()
 
     SessionForm(
-        showTitleAndDescription = true,
+        showTitleAndDescription = false,
         viewModel = viewModel,
         onSubmit = {
             coroutineScope.launch {

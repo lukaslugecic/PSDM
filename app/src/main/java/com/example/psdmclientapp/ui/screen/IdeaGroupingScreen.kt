@@ -136,29 +136,30 @@ fun IdeaGroupingScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text("Attributes:", style = MaterialTheme.typography.labelLarge)
+                    if(attributeTitles.isNotEmpty()) {
+                        Text("Attributes:", style = MaterialTheme.typography.labelLarge)
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        attributeTitles.forEach { title ->
-                            OutlinedTextField(
-                                value = attributeInputs[title] ?: "",
-                                onValueChange = { newValue ->
-                                    attributeInputs = attributeInputs.toMutableMap().also {
-                                        it[title] = newValue
-                                    }
-                                },
-                                label = { Text(title) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                            )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            attributeTitles.forEach { title ->
+                                OutlinedTextField(
+                                    value = attributeInputs[title] ?: "",
+                                    onValueChange = { newValue ->
+                                        attributeInputs = attributeInputs.toMutableMap().also {
+                                            it[title] = newValue
+                                        }
+                                    },
+                                    label = { Text(title) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                )
+                            }
                         }
                     }
-
 
                     Button(
                         onClick = {

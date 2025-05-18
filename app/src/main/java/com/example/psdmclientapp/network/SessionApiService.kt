@@ -4,6 +4,7 @@ import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
 import com.example.psdmclientapp.model.request.InviteUserRequest
 import com.example.psdmclientapp.model.SessionDetailsResponse
 import com.example.psdmclientapp.model.SessionResponse
+import com.example.psdmclientapp.model.request.SessionRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -16,6 +17,9 @@ interface SessionApiService {
 
     @POST("session/andProblem")
     suspend fun createProblemAndSession(@Body request: CreateProblemAndSessionRequest): SessionResponse
+
+    @POST("session")
+    suspend fun createSession(@Body request: SessionRequest): SessionResponse
 
     @POST("session/addUsers")
     suspend fun inviteUsers(@Body request: InviteUserRequest)

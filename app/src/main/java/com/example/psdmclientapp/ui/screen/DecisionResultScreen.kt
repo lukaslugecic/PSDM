@@ -1,6 +1,8 @@
 package com.example.psdmclientapp.ui.screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,9 @@ fun DecisionResultScreen(
     val scoredSolutions = viewModel.scoredSolutions
     val winningSolution = viewModel.winningSolution
 
+    val scrollState = rememberScrollState()
+
+
     LaunchedEffect(Unit) {
         viewModel.determineWinner()
     }
@@ -28,6 +33,7 @@ fun DecisionResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(24.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally

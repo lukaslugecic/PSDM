@@ -24,6 +24,9 @@ class VotingViewModel @Inject constructor(
     var state by mutableStateOf(VotingState())
         private set
 
+    var waintingEveryoneToVote by mutableStateOf(false)
+        private set
+
     init {
         loadSolutions()
     }
@@ -37,7 +40,9 @@ class VotingViewModel @Inject constructor(
                 DecisionMakingMethod.entries.first { m -> m.id == it }
             } ?: DecisionMakingMethod.MAJORITY_RULE
 
+            val initialRatings = solutions.associate { it.id to 3 }.toMutableMap()
             state = state.copy(
+                ratings = initialRatings,
                 currentUserId = 2L,
                 solutions = solutions,
                 decisionMethod = decisionMethod
@@ -51,7 +56,8 @@ class VotingViewModel @Inject constructor(
         })
     }
 
-    fun submitVotes(onSuccess: () -> Unit) {
+
+    fun submitVotes(onNavigate: () -> Unit) {
         viewModelScope.launch {
             try {
                 val votes = state.ratings.map { (solutionId, rating) ->
@@ -63,17 +69,19 @@ class VotingViewModel @Inject constructor(
                 }
                 ApiClient.voteApi.submitVotes(votes)
 
+//                // Start waiting
+//                waintingEveryoneToVote = true
+//
 //                while (true) {
 //                    val allVoted = ApiClient.voteApi.haveAllUsersVoted(sessionId)
-//                    if (allVoted) {
-//                        state = state.copy(shouldNavigateToResult = true)
-//                        break
-//                    }
-//                    delay(3000) // Poll every 3 seconds
+//                    if (allVoted) break
+//                    kotlinx.coroutines.delay(3000)
 //                }
-
-                onSuccess()
+//
+//                waintingEveryoneToVote = false
+                onNavigate()
             } catch (e: Exception) {
+                waintingEveryoneToVote = false
                 state = state.copy(errorMessage = e.localizedMessage)
             }
         }

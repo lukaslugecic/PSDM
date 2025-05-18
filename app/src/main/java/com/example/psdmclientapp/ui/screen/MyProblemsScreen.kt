@@ -16,7 +16,7 @@ import com.example.psdmclientapp.viewmodel.MyProblemsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyProblemsScreen(navController: NavHostController, viewModel: MyProblemsViewModel = viewModel()) {
-    val problems = viewModel.problems
+    val problemDetails = viewModel.problemDetails
     val isLoading = viewModel.isLoading
     val error = viewModel.errorMessage
 
@@ -31,23 +31,23 @@ fun MyProblemsScreen(navController: NavHostController, viewModel: MyProblemsView
             } else if (error != null) {
                 Text("Error: $error", color = Color.Red)
             } else {
-                problems.forEach { problem ->
+                problemDetails.forEach { problemDetail ->
                     Card(modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)) {
 
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(text = problem.title, style = MaterialTheme.typography.titleMedium)
-                            Text(text = problem.description, style = MaterialTheme.typography.bodyMedium)
+                            Text(text = problemDetail.problem.title, style = MaterialTheme.typography.titleMedium)
+                            Text(text = problemDetail.problem.description, style = MaterialTheme.typography.bodyMedium)
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            if (problem.solution != null) {
-                                Text("Solution: ${problem.solution.title}", color = Color.Green)
+                            if (problemDetail.solution != null) {
+                                Text("Solution: ${problemDetail.solution.title}", color = Color.Green)
                             } else {
-                                Button(onClick = {
-                                    navController.navigate("createSession/${problem.id}")
-                                }) {
+                                Button(
+                                    onClick = { navController.navigate("createSession/${problemDetail.problem.id}") }
+                                ) {
                                     Text("Start New Session")
                                 }
                             }

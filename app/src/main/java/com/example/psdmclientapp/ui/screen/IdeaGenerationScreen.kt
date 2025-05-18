@@ -62,7 +62,7 @@ fun IdeaGenerationScreen(
             val route = "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
             viewModel.navigationCommand = NavigationCommand(route)
         } else {
-            viewModel.maybeNavigateAfterDelay(attributeTitles, problemId, sessionId)
+            viewModel.navigateAfterDelay(attributeTitles, problemId, sessionId)
         }
     }
 
@@ -74,6 +74,20 @@ fun IdeaGenerationScreen(
         }
     }
 
+    if (viewModel.isWaitingForSession) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Waiting for next session to begin...")
+            }
+        }
+        return
+    }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(state.problemTitle) }) }
@@ -153,26 +167,28 @@ fun IdeaGenerationScreen(
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    Text("Attributes:", style = MaterialTheme.typography.labelLarge)
+                    if(attributeTitles.isNotEmpty()) {
+                        Text("Attributes:", style = MaterialTheme.typography.labelLarge)
 
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        attributeTitles.forEach { title ->
-                            OutlinedTextField(
-                                value = attributeInputs[title] ?: "",
-                                onValueChange = { newValue ->
-                                    attributeInputs = attributeInputs.toMutableMap().also {
-                                        it[title] = newValue
-                                    }
-                                },
-                                label = { Text(title) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp)
-                            )
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            attributeTitles.forEach { title ->
+                                OutlinedTextField(
+                                    value = attributeInputs[title] ?: "",
+                                    onValueChange = { newValue ->
+                                        attributeInputs = attributeInputs.toMutableMap().also {
+                                            it[title] = newValue
+                                        }
+                                    },
+                                    label = { Text(title) },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                )
+                            }
                         }
                     }
 
