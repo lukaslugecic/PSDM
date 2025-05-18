@@ -10,4 +10,6 @@ public interface UserService {
     Optional<User> getUserById(Long id);
 
     Long getCurrentSessionId(Long userId, boolean isSubSession);
+
+    Boolean checkParentSession(Long userId);
 }

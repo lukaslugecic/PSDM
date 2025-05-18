@@ -32,5 +32,11 @@ public class UserController {
         Long res = userService.getCurrentSessionId(id, true);
         return ResponseEntity.ok(res);
     }
+
+    @GetMapping("/checkParentSession/{id}")
+    public ResponseEntity<Boolean> checkParentSession(@PathVariable Long id) {
+        Boolean res = userService.checkParentSession(id);
+        return ResponseEntity.ok(res);
+    }
 }
 

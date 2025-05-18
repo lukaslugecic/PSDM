@@ -12,6 +12,8 @@ public interface SessionService {
 
     Optional<SessionDetailsDTO> getSessionDetailsById(Long id);
 
+    Session createSession(Session session);
+
     Session createProblemAndSession(CreateProblemAndSessionRequestDTO dto);
 
     void addUsers(Long id, List<Long> usersIds);

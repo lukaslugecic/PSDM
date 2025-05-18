@@ -52,6 +52,11 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
+    public Session createSession(Session session) {
+        return sessionRepository.save(session);
+    }
+
+    @Override
     @Transactional
     public Session createProblemAndSession(CreateProblemAndSessionRequestDTO dto) {
         Problem problem = ProblemMapper.toEntity(dto.getProblem());
@@ -59,7 +64,6 @@ public class SessionServiceImpl implements SessionService {
         Session session = SessionMapper.toEntity(dto.getSession());
         session.setProblem(problem);
 
-        // TODO PROVJERITI TEBA LI OVO
         Optional<ProblemSolvingMethod> methodOpt =
                 problemSolvingMethodService.getProblemSolvingMethodById(dto.getSession().getProblemSolvingMethodId());
         if (methodOpt.isEmpty()) {

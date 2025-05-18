@@ -106,26 +106,26 @@ public class SolutionServiceImpl implements SolutionService {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
         // TODO check if voter voted for only one solution
 
-        Map<Long, Long> scores = solutions.stream()
+        Map<Long, Double> scores = solutions.stream()
                 .filter(s -> s.getVotes() != null && !s.getVotes().isEmpty())
                 .collect(Collectors.toMap(
                         Solution::getId,
-                        s -> s.getVotes().stream()
+                        s -> (double) s.getVotes().stream()
                                 .filter(v -> v.getValue() == 1)
                                 .count()
                 ));
 
-        long totalVotes = scores.values().stream()
-                .mapToLong(Long::longValue)
-                .sum();
+//        double totalVotes = scores.values().stream()
+//                .mapToDouble(Double::doubleValue)
+//                .sum();
+//
+//        double majorityThreshold = totalVotes / 2 + 1;
+//
+//        Map<Long, Double> scoresOverThreshold = scores.entrySet().stream()
+//                .filter(entry -> entry.getValue() >= majorityThreshold)
+//                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        long majorityThreshold = totalVotes / 2 + 1;
-
-        Map<Long, Long> scoresOverThreshold = scores.entrySet().stream()
-                .filter(entry -> entry.getValue() >= majorityThreshold)
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scoresOverThreshold);
+        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
         singleBestSolutionId.ifPresent(this::chooseWinningSolution);
         log.info("Single best solution for majority rule found: {}", singleBestSolutionId);
 
@@ -137,12 +137,12 @@ public class SolutionServiceImpl implements SolutionService {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
         int totalSolutions = solutions.size();
 
-        Map<Long, Integer> scores = solutions.stream()
+        Map<Long, Double> scores = solutions.stream()
                 .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
                 .collect(Collectors.toMap(
                         Solution::getId,
                         s -> s.getVotes().stream()
-                                .mapToInt(v -> {
+                                .mapToDouble(v -> {
                                     int rank = (int) Math.round(v.getValue());
                                     rank = Math.max(1, Math.min(rank, totalSolutions));
                                     return totalSolutions - rank + 1;
@@ -192,21 +192,21 @@ public class SolutionServiceImpl implements SolutionService {
         return weightedSum / sumOfWeights;
     }
 
-    private <ID, S extends Comparable<S>> List<SolutionScoreDTO> toScoredDTOList(Map<ID, S> scores) {
+    private  List<SolutionScoreDTO> toScoredDTOList(Map<Long, Double> scores) {
         int BEST_SOLUTIONS_COUNT = 5;
         return scores.entrySet().stream()
                 .map(entry -> new SolutionScoreDTO(
                         SolutionMapper.toDTO(solutionRepository
-                                .findById((Long) entry.getKey())
+                                .findById(entry.getKey())
                                 .orElseThrow(() -> new RuntimeException("Could not find solution"))),
-                        (Double) entry.getValue()))
+                        entry.getValue()))
                 .sorted(Comparator.comparing(SolutionScoreDTO::getScore).reversed())
                 .limit(BEST_SOLUTIONS_COUNT)
                 .toList();
     }
 
 
-    private <K, V extends Comparable<V>> Optional<K> getUniqueMaxEntry(Map<K, V> scores) {
+    private Optional<Long> getUniqueMaxEntry(Map<Long, Double> scores) {
         return scores.entrySet().stream()
                 .collect(Collectors.groupingBy(
                         Map.Entry::getValue,

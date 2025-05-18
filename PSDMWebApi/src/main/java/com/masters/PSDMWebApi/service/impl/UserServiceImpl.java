@@ -49,4 +49,16 @@ public class UserServiceImpl implements UserService {
         return id;
     }
 
+    @Override
+    public Boolean checkParentSession(Long userId) {
+        return userRepository.findById(userId)
+                .map(User::getSessions)
+                .flatMap(sessions -> sessions.stream()
+                        .filter(session -> (session.getParentSession() == null))
+                        .filter(session -> session.getStart().isBefore(LocalDateTime.now())
+                                && session.getEnd().isAfter(LocalDateTime.now()))
+                        .findFirst()
+                ).isPresent();
+    }
+
 }

@@ -12,5 +12,4 @@ public class SessionRequestDTO {
     private Long problemSolvingMethodId;
     private Long decisionMakingMethodId;
     private Long duration;
-    private Long parentSessionId;
 }

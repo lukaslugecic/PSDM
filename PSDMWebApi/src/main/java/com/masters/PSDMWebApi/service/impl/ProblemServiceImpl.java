@@ -18,6 +18,12 @@ public class ProblemServiceImpl implements ProblemService {
     private final ProblemRepository problemRepository;
 
     @Override
+    public Problem getProblemById(Long id) {
+        return problemRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Problem with id " + id + " not found"));
+    }
+
+    @Override
     public List<ProblemDetailsDTO> getAllProblemsWithSolutionByUserId(Long userId) {
         List<Problem> problems = problemRepository.findByModeratorId(userId);
 
@@ -33,7 +39,7 @@ public class ProblemServiceImpl implements ProblemService {
     }
 
     @Override
-    public Problem createProblem(Problem problem) {
-        return problemRepository.save(problem);
+    public void createProblem(Problem problem) {
+        problemRepository.save(problem);
     }
 }

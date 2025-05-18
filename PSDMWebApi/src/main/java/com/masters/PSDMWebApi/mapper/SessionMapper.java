@@ -55,9 +55,6 @@ public class SessionMapper {
         entity.setDecisionMakingMethod(new DecisionMakingMethod(dto.getDecisionMakingMethodId()));
         entity.setDuration(Duration.ofSeconds(dto.getDuration()));
         entity.setStart(LocalDateTime.now());
-        if(dto.getParentSessionId() != null){
-            entity.setParentSession(new Session(dto.getParentSessionId()));
-        }
         return entity;
     }
 }

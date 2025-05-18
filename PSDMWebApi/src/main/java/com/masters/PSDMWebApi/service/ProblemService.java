@@ -6,7 +6,9 @@ import com.masters.PSDMWebApi.model.Problem;
 import java.util.List;
 
 public interface ProblemService {
-    Problem createProblem(Problem session);
+    Problem getProblemById(Long id);
+
+    void createProblem(Problem session);
 
     List<ProblemDetailsDTO> getAllProblemsWithSolutionByUserId(Long id);
 }
