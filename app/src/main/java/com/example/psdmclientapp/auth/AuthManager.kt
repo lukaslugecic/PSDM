@@ -12,8 +12,8 @@ object AuthManager {
 
     private const val CLIENT_ID = "psdm-android-client"
     private const val REDIRECT_URI = "com.example.psdmclientapp://callback"
-    private const val AUTH_ENDPOINT = "http://192.168.186.220:8080/realms/psdm/protocol/openid-connect/auth"
-    private const val TOKEN_ENDPOINT = "http://192.168.186.220:8080/realms/psdm/protocol/openid-connect/token"
+    private const val AUTH_ENDPOINT = "http://192.168.186.220:8080/realms/psdm-realm/protocol/openid-connect/auth"
+    private const val TOKEN_ENDPOINT = "http://192.168.186.220:8080/realms/psdm-realm/protocol/openid-connect/token"
 
     private val serviceConfig = AuthorizationServiceConfiguration(
         AUTH_ENDPOINT.toUri(),
