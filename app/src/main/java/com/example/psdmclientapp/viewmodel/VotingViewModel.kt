@@ -42,6 +42,7 @@ class VotingViewModel @Inject constructor(
 
             val initialRatings = solutions.associate { it.id to 3 }.toMutableMap()
             state = state.copy(
+                maxDuration = session.body()?.session?.duration,
                 ratings = initialRatings,
                 currentUserId = 2L,
                 solutions = solutions,
@@ -69,16 +70,25 @@ class VotingViewModel @Inject constructor(
                 }
                 ApiClient.voteApi.submitVotes(votes)
 
-//                // Start waiting
-//                waintingEveryoneToVote = true
-//
-//                while (true) {
-//                    val allVoted = ApiClient.voteApi.haveAllUsersVoted(sessionId)
-//                    if (allVoted) break
-//                    kotlinx.coroutines.delay(3000)
-//                }
-//
-//                waintingEveryoneToVote = false
+                waintingEveryoneToVote = true
+
+                val maxDurationMillis = (state.maxDuration ?: 60L) * 1000  // default to 60s if null
+                val startTime = System.currentTimeMillis()
+
+                while (true) {
+                    val allVoted = ApiClient.voteApi.haveAllUsersVoted(sessionId)
+                    if (allVoted) break
+
+                    val elapsed = System.currentTimeMillis() - startTime
+                    if (elapsed >= maxDurationMillis) {
+                        state = state.copy(errorMessage = "Timed out waiting for all users to vote.")
+                        break
+                    }
+
+                    kotlinx.coroutines.delay(3000)
+                }
+
+                waintingEveryoneToVote = false
                 onNavigate()
             } catch (e: Exception) {
                 waintingEveryoneToVote = false
@@ -86,5 +96,6 @@ class VotingViewModel @Inject constructor(
             }
         }
     }
+
 
 }

@@ -10,6 +10,6 @@ interface VoteApiService {
     @POST("votes")
     suspend fun submitVotes(@Body votes: List<VoteRequest>)
 
-    @GET("/hasEveryoneVoted/{sessionId}")
+    @GET("votes/hasEveryoneVoted/{sessionId}")
     suspend fun haveAllUsersVoted(@Path("sessionId") sessionId: Long): Boolean
 }
