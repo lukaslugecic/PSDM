@@ -18,6 +18,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        manifestPlaceholders["appAuthRedirectScheme"] = "com.example.psdmclientapp"
     }
 
     buildTypes {
@@ -75,6 +77,10 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     implementation(libs.kotlinx.serialization.json)
+
+    implementation ("net.openid:appauth:0.11.1")
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
 
 
     testImplementation(libs.junit)

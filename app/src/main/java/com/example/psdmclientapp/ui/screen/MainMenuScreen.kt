@@ -35,7 +35,6 @@ fun MainMenuScreen(navController: NavHostController) {
                 .height(400.dp)
                 .padding(bottom = 16.dp)
         )
-
         Button(onClick = { navController.navigate("createProblem") }) {
             Text("Create Problem")
         }

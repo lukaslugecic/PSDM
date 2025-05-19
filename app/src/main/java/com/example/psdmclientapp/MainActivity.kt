@@ -1,8 +1,13 @@
 package com.example.psdmclientapp
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
@@ -10,6 +15,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.psdmclientapp.auth.AuthManager
+import com.example.psdmclientapp.auth.TokenStorage
 import com.example.psdmclientapp.ui.screen.InviteUsersScreen
 import com.example.psdmclientapp.ui.screen.MainMenuScreen
 import com.example.psdmclientapp.ui.screen.IdeaGenerationScreen
@@ -18,6 +25,7 @@ import com.example.psdmclientapp.ui.screen.CreateProblemScreen
 import com.example.psdmclientapp.ui.screen.CreateSessionScreen
 import com.example.psdmclientapp.ui.screen.DecisionResultScreen
 import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
+import com.example.psdmclientapp.ui.screen.LoginScreen
 import com.example.psdmclientapp.ui.screen.MyProblemsScreen
 import com.example.psdmclientapp.ui.screen.NominalGroupScreen
 import com.example.psdmclientapp.ui.screen.VotingScreen
@@ -26,21 +34,53 @@ import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 class MainActivity : ComponentActivity() {
+    private lateinit var authLauncher: ActivityResultLauncher<Intent>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        authLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val data = result.data
+            if (result.resultCode == Activity.RESULT_OK && data != null) {
+                AuthManager.handleAuthResponse(this, data) { accessToken ->
+                    if (accessToken != null) {
+                        Log.d("TOKEN", "Access Token: $accessToken")
+                        TokenStorage.saveToken(this, accessToken)
+                        onLoginSuccess?.invoke()
+                        onLoginSuccess = null // Reset callback
+                    } else {
+                        Log.e("AUTH", "Authentication failed")
+                    }
+                }
+            }
+        }
+
+
         setContent {
             MaterialTheme {
                 AppNavGraph()
             }
         }
     }
+
+    fun startLogin(onSuccess: () -> Unit) {
+        AuthManager.startAuthWithLauncher(this, authLauncher)
+        // Store callback somewhere
+        this.onLoginSuccess = onSuccess
+    }
+
+    private var onLoginSuccess: (() -> Unit)? = null
+
 }
 
 @Composable
-fun AppNavGraph(startDestination: String = "mainMenu") {
+fun AppNavGraph(startDestination: String = "login") {
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = startDestination) {
+
+        composable("login") { LoginScreen(navController) }
+
         composable("mainMenu") { MainMenuScreen(navController) }
         composable("createProblem") { CreateProblemScreen(navController) }
 
