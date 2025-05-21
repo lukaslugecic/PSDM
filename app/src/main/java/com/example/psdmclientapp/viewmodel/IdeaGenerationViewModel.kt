@@ -10,13 +10,15 @@ import com.example.psdmclientapp.enum.DecisionMakingMethod
 import com.example.psdmclientapp.enum.ProblemSolvingMethod
 import com.example.psdmclientapp.model.request.SolutionRequest
 import com.example.psdmclientapp.model.UserResponse
-import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.state.ProblemSolvingSessionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 import com.example.psdmclientapp.model.request.AttributeRequest
+import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.SolutionApiService
+import com.example.psdmclientapp.network.UserApiService
 import kotlinx.coroutines.delay
 import kotlinx.serialization.json.Json
 import java.net.URLEncoder
@@ -25,7 +27,10 @@ import kotlinx.serialization.encodeToString
 
 @HiltViewModel
 class IdeaGenerationViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val sessionApi: SessionApiService,
+    private val userApi: UserApiService,
+    private val solutionApi: SolutionApiService,
 ) : ViewModel() {
 
     private val sessionId: Long = checkNotNull(savedStateHandle["sessionId"])
@@ -52,8 +57,8 @@ class IdeaGenerationViewModel @Inject constructor(
         return try {
             state = state.copy(isLoading = true)
 
-            val sessionDetails = ApiClient.sessionApi.getSessionDetails(sessionId)
-            val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+            val sessionDetails = sessionApi.getSessionDetails(sessionId)
+            val solutions = solutionApi.getSolutionsBySessionId(sessionId)
 
             val currentUser = UserResponse(
                 3L, "Ime", "Prezime", "Email", LocalDate.now(), 1L
@@ -120,13 +125,13 @@ class IdeaGenerationViewModel @Inject constructor(
                     while (parentStillRunning && newSessionId == null) {
                         // Try to get subsession
                         newSessionId = runCatching {
-                            ApiClient.userApi.getCurrentSubSessionId(state.currentUserId!!)
+                            userApi.getCurrentSubSessionId(state.currentUserId!!)
                         }.getOrNull()
 
                         if (newSessionId == null) {
                             // Check if parent is still running
                             parentStillRunning = runCatching {
-                                ApiClient.userApi.checkParentSession(state.currentUserId!!)
+                                userApi.checkParentSession(state.currentUserId!!)
                             }.getOrDefault(false)
 
                             if (parentStillRunning) {
@@ -153,12 +158,27 @@ class IdeaGenerationViewModel @Inject constructor(
         }
     }
 
+    suspend fun shouldRedirect(attributeTitles: List<String>,) {
+        val shouldRedirect = loadSession(sessionId)
+
+        if (shouldRedirect && state.currentUserId != null) {
+            val json = Json.encodeToString(attributeTitles)
+            val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+            val newSessionId = userApi.getCurrentSubSessionId(state.currentUserId!!)
+
+            val route = "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
+            navigationCommand = NavigationCommand(route)
+        } else {
+            navigateAfterDelay(attributeTitles, problemId, sessionId)
+        }
+    }
+
 
 
     fun refreshSolutions() {
         viewModelScope.launch {
             try {
-                val solutions = ApiClient.solutionApi.getSolutionsBySessionId(sessionId)
+                val solutions = solutionApi.getSolutionsBySessionId(sessionId)
                 state = state.copy(solutions = solutions)
             } catch (e: Exception) {
                 state = state.copy(errorMessage = e.localizedMessage)
@@ -173,7 +193,7 @@ class IdeaGenerationViewModel @Inject constructor(
                     .filter { it.first.isNotBlank() && it.second.isNotBlank() }
                     .map { (key, value) -> AttributeRequest(title = key, value = value) }
 
-                val newSolution = ApiClient.solutionApi.submitSolution(
+                val newSolution = solutionApi.submitSolution(
                     SolutionRequest(
                         title = title,
                         userId = state.currentUserId,

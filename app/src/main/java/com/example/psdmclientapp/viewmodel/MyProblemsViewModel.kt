@@ -6,14 +6,16 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.ProblemWithSolutionResponse
-import com.example.psdmclientapp.network.ApiClient
+import com.example.psdmclientapp.network.ProblemApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
 @HiltViewModel
-class MyProblemsViewModel @Inject constructor() : ViewModel() {
+class MyProblemsViewModel @Inject constructor(
+    private val problemApi: ProblemApiService
+) : ViewModel() {
     var problemDetails by mutableStateOf<List<ProblemWithSolutionResponse>>(emptyList())
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
@@ -26,7 +28,7 @@ class MyProblemsViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             try {
                 isLoading = true
-                problemDetails = ApiClient.problemApi.getUserProblemsWithSolutions(1)
+                problemDetails = problemApi.getUserProblemsWithSolutions(1)
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Unknown error"
             } finally {

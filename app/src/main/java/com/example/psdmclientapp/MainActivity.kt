@@ -1,6 +1,5 @@
 package com.example.psdmclientapp
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -29,32 +28,28 @@ import com.example.psdmclientapp.ui.screen.LoginScreen
 import com.example.psdmclientapp.ui.screen.MyProblemsScreen
 import com.example.psdmclientapp.ui.screen.NominalGroupScreen
 import com.example.psdmclientapp.ui.screen.VotingScreen
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.json.Json
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
     private lateinit var authLauncher: ActivityResultLauncher<Intent>
+    private var onLoginSuccess: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        authLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            val data = result.data
-            if (result.resultCode == Activity.RESULT_OK && data != null) {
-                AuthManager.handleAuthResponse(this, data) { accessToken ->
-                    if (accessToken != null) {
-                        Log.d("TOKEN", "Access Token: $accessToken")
-                        TokenStorage.saveToken(this, accessToken)
-                        onLoginSuccess?.invoke()
-                        onLoginSuccess = null // Reset callback
-                    } else {
-                        Log.e("AUTH", "Authentication failed")
-                    }
-                }
-            }
+        // ① Register the launcher before you ever use it:
+        authLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            // We don’t actually need the resultCode/data here,
+            // since the browser redirect comes back via onNewIntent()
+            Log.d("AUTH_MANAGER", "Returned from browser to activity result")
         }
-
 
         setContent {
             MaterialTheme {
@@ -63,15 +58,34 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * ② Delegate into AuthManager, passing the launcher we just initialized
+     */
     fun startLogin(onSuccess: () -> Unit) {
+        onLoginSuccess = onSuccess
         AuthManager.startAuthWithLauncher(this, authLauncher)
-        // Store callback somewhere
-        this.onLoginSuccess = onSuccess
     }
 
-    private var onLoginSuccess: (() -> Unit)? = null
-
+    /**
+     * ③ Handle the browser→app redirect here
+     */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        intent.data?.let { uri ->
+            Log.d("AUTH_MANAGER", "Redirect URI: $uri")
+            AuthManager.handleAuthResponse(this, intent) { token ->
+                if (token != null) {
+                    TokenStorage.saveTokens(this, token, null)
+                    onLoginSuccess?.invoke()
+                    onLoginSuccess = null
+                } else {
+                    Log.e("AUTH_MANAGER", "No token in response")
+                }
+            }
+        }
+    }
 }
+
 
 @Composable
 fun AppNavGraph(startDestination: String = "login") {
@@ -80,8 +94,9 @@ fun AppNavGraph(startDestination: String = "login") {
     NavHost(navController = navController, startDestination = startDestination) {
 
         composable("login") { LoginScreen(navController) }
-
         composable("mainMenu") { MainMenuScreen(navController) }
+
+
         composable("createProblem") { CreateProblemScreen(navController) }
 
         composable(

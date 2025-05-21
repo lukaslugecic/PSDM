@@ -1,5 +1,6 @@
 package com.example.psdmclientapp.ui.screen
 
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,16 +11,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel
-import com.example.psdmclientapp.viewmodel.IdeaGenerationViewModel.NavigationCommand
 import kotlinx.coroutines.delay
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -28,9 +23,10 @@ fun IdeaGenerationScreen(
     problemId: Long,
     sessionId: Long,
     attributeTitles: List<String>,
-    viewModel: IdeaGenerationViewModel = viewModel()
+    viewModel: IdeaGenerationViewModel = hiltViewModel()
 ) {
     rememberCoroutineScope()
+
     val state = viewModel.state
 
     var ideaInput by remember { mutableStateOf("") }
@@ -52,12 +48,19 @@ fun IdeaGenerationScreen(
     }
 
     LaunchedEffect(sessionId) {
+        viewModel.shouldRedirect(attributeTitles)
+    }
+
+    /*
+    *
+
+    LaunchedEffect(sessionId) {
         val shouldRedirect = viewModel.loadSession(sessionId)
 
         if (shouldRedirect && viewModel.state.currentUserId != null) {
             val json = Json.encodeToString(attributeTitles)
             val encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
-            val newSessionId = ApiClient.userApi.getCurrentSubSessionId(viewModel.state.currentUserId!!)
+            val newSessionId = userApi.getCurrentSubSessionId(viewModel.state.currentUserId!!)
 
             val route = "ideaGeneration/$problemId/$newSessionId/$encodedAttributes"
             viewModel.navigationCommand = NavigationCommand(route)
@@ -65,6 +68,8 @@ fun IdeaGenerationScreen(
             viewModel.navigateAfterDelay(attributeTitles, problemId, sessionId)
         }
     }
+
+    * */
 
 
     LaunchedEffect(Unit) {

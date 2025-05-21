@@ -5,6 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.psdmclientapp.viewmodel.SessionLobbyViewModel
 import kotlinx.coroutines.delay
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 fun SessionLobbyScreen(
     navController: NavHostController,
     sessionId: Long,
-    viewModel: SessionLobbyViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: SessionLobbyViewModel = hiltViewModel()
 ) {
 //    val session = viewModel.sessionInfo
 //    val isLoading = viewModel.isLoading

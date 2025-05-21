@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.example.psdmclientapp.viewmodel.CreateProblemViewModel
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.psdmclientapp.ui.component.SessionForm
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -16,7 +16,7 @@ import kotlinx.serialization.encodeToString
 @Composable
 fun CreateSessionScreen(
     navController: NavHostController,
-    viewModel: CreateProblemViewModel = viewModel()
+    viewModel: CreateProblemViewModel = hiltViewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
 

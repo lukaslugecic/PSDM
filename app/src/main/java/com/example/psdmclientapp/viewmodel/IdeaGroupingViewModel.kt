@@ -9,13 +9,14 @@ import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.request.SolutionRequest
 import com.example.psdmclientapp.model.UserResponse
 import com.example.psdmclientapp.model.request.GroupSolutionRequest
-import com.example.psdmclientapp.network.ApiClient
 import com.example.psdmclientapp.state.ProblemSolvingSessionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 import com.example.psdmclientapp.model.request.AttributeRequest
+import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.SolutionApiService
 import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,7 +25,9 @@ import java.nio.charset.StandardCharsets
 
 @HiltViewModel
 class IdeaGroupingViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val sessionApi: SessionApiService,
+    private val solutionApi: SolutionApiService,
 ) : ViewModel() {
 
     private val sessionId: Long = checkNotNull(savedStateHandle["sessionId"])
@@ -44,8 +47,8 @@ class IdeaGroupingViewModel @Inject constructor(
          try {
             state = state.copy(isLoading = true)
 
-            val sessionDetails = ApiClient.sessionApi.getSessionDetails(sessionId)
-            val solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
+            val sessionDetails = sessionApi.getSessionDetails(sessionId)
+            val solutions = solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
 
             val currentUser = UserResponse(
                 3L, "Ime", "Prezime", "Email", LocalDate.now(), 1L
@@ -82,7 +85,7 @@ class IdeaGroupingViewModel @Inject constructor(
     fun refreshSolutions() {
         viewModelScope.launch {
             try {
-                val solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
+                val solutions = solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
                 state = state.copy(solutions = solutions)
             } catch (e: Exception) {
                 state = state.copy(errorMessage = e.localizedMessage)
@@ -97,7 +100,7 @@ class IdeaGroupingViewModel @Inject constructor(
                     .filter { it.first.isNotBlank() && it.second.isNotBlank() }
                     .map { (key, value) -> AttributeRequest(title = key, value = value) }
 
-                val newSolution = ApiClient.solutionApi.groupSolutions(
+                val newSolution = solutionApi.groupSolutions(
                     GroupSolutionRequest(
                         solutionIds,
                         SolutionRequest(

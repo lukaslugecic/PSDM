@@ -10,12 +10,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.psdmclientapp.viewmodel.MyProblemsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyProblemsScreen(navController: NavHostController, viewModel: MyProblemsViewModel = viewModel()) {
+fun MyProblemsScreen(navController: NavHostController, viewModel: MyProblemsViewModel = hiltViewModel()) {
     val problemDetails = viewModel.problemDetails
     val isLoading = viewModel.isLoading
     val error = viewModel.errorMessage

@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
@@ -22,7 +23,7 @@ fun InviteUsersScreen(
     problemId: Long,
     sessionId: Long,
     attributeTitles: List<String>,
-    viewModel: InviteUsersViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+    viewModel: InviteUsersViewModel = hiltViewModel()
 ) {
     val coroutineScope = rememberCoroutineScope()
 

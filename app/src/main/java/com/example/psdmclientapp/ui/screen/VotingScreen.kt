@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.psdmclientapp.enum.DecisionMakingMethod
@@ -21,7 +22,7 @@ fun VotingScreen(
     navController: NavHostController,
     problemId: Long,
     sessionId: Long,
-    viewModel: VotingViewModel = viewModel()
+    viewModel: VotingViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
 

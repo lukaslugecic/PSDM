@@ -7,14 +7,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.model.request.InviteUserRequest
 import com.example.psdmclientapp.model.UserResponse
-import com.example.psdmclientapp.network.ApiClient.userApi
-import com.example.psdmclientapp.network.ApiClient.sessionApi
+import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.UserApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class InviteUsersViewModel @Inject constructor() : ViewModel() {
+class InviteUsersViewModel @Inject constructor(
+    private val userApi: UserApiService,
+    private val sessionApi: SessionApiService
+) : ViewModel() {
 
     var availableUsers by mutableStateOf<List<UserResponse>>(emptyList())
         private set

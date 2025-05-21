@@ -1,43 +1,57 @@
 package com.example.psdmclientapp.auth
 
 import android.content.Context
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import androidx.core.content.edit
 
 object TokenStorage {
     private const val PREF_NAME = "secure_prefs"
-    private const val KEY_ACCESS_TOKEN = "access_token"
+    private const val KEY_ACCESS_TOKEN  = "access_token"
+    private const val KEY_REFRESH_TOKEN = "refresh_token"
 
-    fun saveToken(context: Context, token: String) {
-        val masterKey = MasterKey.Builder(context)
+    private fun prefs(context: Context) = EncryptedSharedPreferences.create(
+        context,
+        PREF_NAME,
+        MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+            .build(),
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+    )
 
-        val prefs = EncryptedSharedPreferences.create(
-            context,
-            PREF_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        prefs.edit { putString(KEY_ACCESS_TOKEN, token) }
+    fun saveTokens(context: Context, accessToken: String, refreshToken: String?) {
+        try {
+            prefs(context).edit {
+                putString(KEY_ACCESS_TOKEN,  accessToken)
+                if (refreshToken != null) putString(KEY_REFRESH_TOKEN, refreshToken)
+            }
+            Log.d("TOKEN_STORAGE", "Tokens saved: access=$accessToken refresh=$refreshToken")
+        } catch (e: Exception) {
+            Log.e("TOKEN_STORAGE", "Failed to save tokens", e)
+        }
     }
 
-    fun getToken(context: Context): String? {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+    fun getAccessToken(context: Context): String? =
+        try {
+            prefs(context).getString(KEY_ACCESS_TOKEN, null).also {
+                Log.d("TOKEN_STORAGE", "Access token loaded: $it")
+            }
+        } catch (e: Exception) {
+            Log.e("TOKEN_STORAGE", "Failed to load access token", e)
+            null
+        }
 
-        val prefs = EncryptedSharedPreferences.create(
-            context,
-            PREF_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-
-        return prefs.getString(KEY_ACCESS_TOKEN, null)
-    }
+    fun getRefreshToken(context: Context): String? =
+        try {
+            prefs(context).getString(KEY_REFRESH_TOKEN, null).also {
+                Log.d("TOKEN_STORAGE", "Refresh token loaded: $it")
+            }
+        } catch (e: Exception) {
+            Log.e("TOKEN_STORAGE", "Failed to load refresh token", e)
+            null
+        }
 }
+
+

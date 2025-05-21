@@ -8,7 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.enum.DecisionMakingMethod
 import com.example.psdmclientapp.model.request.VoteRequest
-import com.example.psdmclientapp.network.ApiClient
+import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.SolutionApiService
+import com.example.psdmclientapp.network.VoteApiService
 import com.example.psdmclientapp.state.VotingState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,7 +19,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class VotingViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val voteApi: VoteApiService,
+    private val solutionApi: SolutionApiService,
+    private val sessionApi: SessionApiService,
 ) : ViewModel() {
     private val sessionId : Long = checkNotNull(savedStateHandle["sessionId"])
 
@@ -33,8 +38,8 @@ class VotingViewModel @Inject constructor(
 
     fun loadSolutions() {
         viewModelScope.launch {
-            val session = ApiClient.sessionApi.getSessionDetails(sessionId)
-            var solutions = ApiClient.solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
+            val session = sessionApi.getSessionDetails(sessionId)
+            var solutions = solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
 
             val decisionMethod = session.body()?.session?.decisionMakingMethodId?.let {
                 DecisionMakingMethod.entries.first { m -> m.id == it }
@@ -68,7 +73,7 @@ class VotingViewModel @Inject constructor(
                         value = rating.toDouble()
                     )
                 }
-                ApiClient.voteApi.submitVotes(votes)
+                voteApi.submitVotes(votes)
 
                 waintingEveryoneToVote = true
 
@@ -76,7 +81,7 @@ class VotingViewModel @Inject constructor(
                 val startTime = System.currentTimeMillis()
 
                 while (true) {
-                    val allVoted = ApiClient.voteApi.haveAllUsersVoted(sessionId)
+                    val allVoted = voteApi.haveAllUsersVoted(sessionId)
                     if (allVoted) break
 
                     val elapsed = System.currentTimeMillis() - startTime

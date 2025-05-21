@@ -8,7 +8,6 @@ import javax.inject.Inject
 import com.example.psdmclientapp.model.request.SessionRequest
 import com.example.psdmclientapp.model.SessionResponse
 import com.example.psdmclientapp.model.request.ProblemRequest
-import com.example.psdmclientapp.network.ApiClient
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
@@ -17,12 +16,18 @@ import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
 import com.example.psdmclientapp.model.DecisionMakingMethodResponse
 import com.example.psdmclientapp.model.ProblemResponse
 import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
+import com.example.psdmclientapp.network.MethodApiService
+import com.example.psdmclientapp.network.ProblemApiService
+import com.example.psdmclientapp.network.SessionApiService
 import kotlinx.coroutines.launch
 import kotlin.Long
 
 @HiltViewModel
 class CreateProblemViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val sessionApi: SessionApiService,
+    private val problemApi: ProblemApiService,
+    private val methodApi: MethodApiService
 ) : ViewModel() {
 
     private val problemId: Long? = savedStateHandle["problemId"]
@@ -54,13 +59,13 @@ class CreateProblemViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if(problemId != null) {
-                    val problemResponse : ProblemResponse = ApiClient.problemApi.getProblem(problemId)
+                    val problemResponse : ProblemResponse = problemApi.getProblem(problemId)
                     title = problemResponse.title
                     description = problemResponse.description
                 }
 
-                problemSolvingMethods = ApiClient.methodApi.getSolvingSolvingMethods()
-                decisionMakingMethods = ApiClient.methodApi.getDecisionMakingMethods()
+                problemSolvingMethods = methodApi.getSolvingSolvingMethods()
+                decisionMakingMethods = methodApi.getDecisionMakingMethods()
 
             } catch (e: Exception) {
                 errorMessage = "Failed to load methods: ${e.message}"
@@ -89,7 +94,7 @@ class CreateProblemViewModel @Inject constructor(
             }
 
             val session = if (problemId == null) {
-                ApiClient.sessionApi.createProblemAndSession(
+                sessionApi.createProblemAndSession(
                     CreateProblemAndSessionRequest(
                         ProblemRequest(
                             title = title,
@@ -105,7 +110,7 @@ class CreateProblemViewModel @Inject constructor(
                     )
                 )
             } else {
-                ApiClient.sessionApi.createSession(
+                sessionApi.createSession(
                     SessionRequest(
                         problemId = problemId,
                         problemSolvingMethodId = selectedSolvingMethodId!!,

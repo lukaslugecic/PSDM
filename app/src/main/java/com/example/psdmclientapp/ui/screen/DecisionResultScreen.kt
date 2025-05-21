@@ -9,7 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.psdmclientapp.viewmodel.DecisionResultViewModel
 
@@ -18,7 +18,7 @@ fun DecisionResultScreen(
     navController: NavHostController,
     problemId: Long,
     sessionId: Long,
-    viewModel: DecisionResultViewModel = viewModel()
+    viewModel: DecisionResultViewModel = hiltViewModel()
 ) {
     val scoredSolutions = viewModel.scoredSolutions
     val winningSolution = viewModel.winningSolution

@@ -12,7 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.psdmclientapp.viewmodel.IdeaGroupingViewModel
 import kotlinx.coroutines.delay
@@ -24,7 +24,7 @@ fun IdeaGroupingScreen(
     problemId: Long,
     sessionId: Long,
     attributeTitles: List<String>,
-    viewModel: IdeaGroupingViewModel = viewModel()
+    viewModel: IdeaGroupingViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
     val selectedSolutions = remember { mutableStateListOf<Long>() }
