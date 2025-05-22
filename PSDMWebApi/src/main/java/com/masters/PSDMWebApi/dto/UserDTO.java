@@ -11,8 +11,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class UserDTO {
     private Long id;
-    private String name;
-    private String surname;
+    private String keycloakId;
+    private String username;
+    private String firstName;
+    private String lastName;
     private String email;
     private LocalDate dateOfBirth;
     private Long roleId;

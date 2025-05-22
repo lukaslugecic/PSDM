@@ -11,8 +11,10 @@ public class UserMapper {
 
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
-        dto.setName(user.getName());
-        dto.setSurname(user.getSurname());
+        dto.setKeycloakId(user.getKeycloakId());
+        dto.setUsername(user.getUsername());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
         dto.setEmail(user.getEmail());
         dto.setDateOfBirth(user.getDateOfBirth());
         dto.setRoleId(user.getRole().getId());
@@ -24,8 +26,10 @@ public class UserMapper {
 
         User entity = new User();
         entity.setId(dto.getId());
-        entity.setName(dto.getName());
-        entity.setSurname(dto.getSurname());
+        entity.setKeycloakId(dto.getKeycloakId());
+        entity.setUsername(dto.getUsername());
+        entity.setFirstName(dto.getFirstName());
+        entity.setLastName(dto.getLastName());
         entity.setEmail(dto.getEmail());
         entity.setDateOfBirth(dto.getDateOfBirth());
         entity.setRole(new Role(dto.getRoleId()));

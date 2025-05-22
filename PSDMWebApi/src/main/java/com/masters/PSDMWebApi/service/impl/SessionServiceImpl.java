@@ -197,7 +197,7 @@ public class SessionServiceImpl implements SessionService {
 
             log.info("ROUND {} — START: {}", round + 1, slotStartTime);
             for (Pair<User, User> pair : slot) {
-                log.info("Pair: {} {}", pair.key().getName(), pair.value().getName());
+                log.info("Pair: {} {}", pair.key().getFirstName(), pair.value().getLastName());
 
                 Session subsession = createSubSession(session, slotStartTime, duration);
                 addUsersToSession(subsession, List.of(pair.key(), pair.value()));

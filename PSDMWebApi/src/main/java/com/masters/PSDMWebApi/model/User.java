@@ -19,11 +19,18 @@ public class User {
     @Column(name = "id_user")
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    private String name;
+    // this is the UUID Keycloak gives you
+    @Column(name = "keycloak_id", nullable = false, unique = true, length = 36)
+    private String keycloakId;
 
-    @Column(name = "surname", nullable = false)
-    private String surname;
+    @Column(name = "username", nullable = false)
+    private String username;
+
+    @Column(name = "first_name", nullable = false)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    private String lastName;
 
     @Column(name = "email", nullable = false)
     private String email;

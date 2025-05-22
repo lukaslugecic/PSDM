@@ -17,7 +17,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/psdm-realm
+          issuer-uri: http://192.168.186.220:8080/realms/psdm-realm
 
 
 server:

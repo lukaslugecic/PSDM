@@ -2,10 +2,13 @@ package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.UserDTO;
 import com.masters.PSDMWebApi.mapper.UserMapper;
+import com.masters.PSDMWebApi.model.User;
 import com.masters.PSDMWebApi.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +28,14 @@ public class UserController {
                 .stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDTO> me(@AuthenticationPrincipal Jwt jwt) {
+        String keycloakId = jwt.getSubject();
+        User user = userService.getUserByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(UserMapper.toDTO(user));
     }
 
     @GetMapping("/currentSubSession/{id}")
