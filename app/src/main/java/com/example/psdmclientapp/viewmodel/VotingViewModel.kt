@@ -10,6 +10,7 @@ import com.example.psdmclientapp.enum.DecisionMakingMethod
 import com.example.psdmclientapp.model.request.VoteRequest
 import com.example.psdmclientapp.network.SessionApiService
 import com.example.psdmclientapp.network.SolutionApiService
+import com.example.psdmclientapp.network.UserApiService
 import com.example.psdmclientapp.network.VoteApiService
 import com.example.psdmclientapp.state.VotingState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +24,7 @@ class VotingViewModel @Inject constructor(
     private val voteApi: VoteApiService,
     private val solutionApi: SolutionApiService,
     private val sessionApi: SessionApiService,
+    private val userApi: UserApiService
 ) : ViewModel() {
     private val sessionId : Long = checkNotNull(savedStateHandle["sessionId"])
 
@@ -40,6 +42,7 @@ class VotingViewModel @Inject constructor(
         viewModelScope.launch {
             val session = sessionApi.getSessionDetails(sessionId)
             var solutions = solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
+            var user = userApi.getCurrentUser()
 
             val decisionMethod = session.body()?.session?.decisionMakingMethodId?.let {
                 DecisionMakingMethod.entries.first { m -> m.id == it }
@@ -49,7 +52,7 @@ class VotingViewModel @Inject constructor(
             state = state.copy(
                 maxDuration = session.body()?.session?.duration,
                 ratings = initialRatings,
-                currentUserId = 2L,
+                currentUserId = user.id,
                 solutions = solutions,
                 decisionMethod = decisionMethod
             )

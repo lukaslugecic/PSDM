@@ -1,6 +1,7 @@
 package com.example.psdmclientapp.network
 
 import android.content.Context
+import android.net.Uri
 import com.example.psdmclientapp.auth.TokenAuthenticator
 import dagger.Module
 import dagger.Provides
@@ -9,9 +10,13 @@ import dagger.hilt.components.SingletonComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import net.openid.appauth.AppAuthConfiguration
 import net.openid.appauth.AuthorizationService
+import net.openid.appauth.connectivity.ConnectionBuilder
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.HttpURLConnection
+import java.net.URL
 import javax.inject.Singleton
 
 @Module
@@ -20,11 +25,18 @@ object NetworkModule {
 
     private const val BASE_URL = "http://192.168.186.220:8081/api/"
 
+    private val allowHttpConnectionBuilder = ConnectionBuilder { uri: Uri ->
+        (URL(uri.toString()).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000
+            readTimeout    = 10_000
+        }
+    }
+
     @Provides
     @Singleton
     fun provideAppAuthConfig(): AppAuthConfiguration =
         AppAuthConfiguration.Builder()
-            // .setConnectionBuilder(...) // only if you need HTTP on dev
+            .setConnectionBuilder(allowHttpConnectionBuilder)
             .build()
 
     @Provides
@@ -50,16 +62,26 @@ object NetworkModule {
     ): TokenAuthenticator =
         TokenAuthenticator(ctx, authService)
 
+
+
     @Provides
     @Singleton
     fun provideOkHttpClient(
         authInterceptor: AuthInterceptor,
         tokenAuthenticator: TokenAuthenticator
-    ): OkHttpClient =
-        OkHttpClient.Builder()
+    ): OkHttpClient {
+
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.HEADERS
+        }
+
+        return OkHttpClient.Builder()
+            .addInterceptor(logging)
             .addInterceptor(authInterceptor)
             .authenticator(tokenAuthenticator)
             .build()
+    }
+
 
     @Provides
     @Singleton

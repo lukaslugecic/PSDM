@@ -60,9 +60,7 @@ class IdeaGenerationViewModel @Inject constructor(
             val sessionDetails = sessionApi.getSessionDetails(sessionId)
             val solutions = solutionApi.getSolutionsBySessionId(sessionId)
 
-            val currentUser = UserResponse(
-                3L, "Ime", "Prezime", "Email", LocalDate.now(), 1L
-            )
+            val currentUser = userApi.getCurrentUser()
 
             val problemSolvingMethodId = sessionDetails.body()?.session?.problemSolvingMethodId ?: 1
             val decisionMakingMethodId = sessionDetails.body()?.session?.decisionMakingMethodId ?: 1

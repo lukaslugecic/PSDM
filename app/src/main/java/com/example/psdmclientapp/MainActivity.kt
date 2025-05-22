@@ -9,6 +9,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -37,23 +38,40 @@ import java.nio.charset.StandardCharsets
 class MainActivity : ComponentActivity() {
 
     private lateinit var authLauncher: ActivityResultLauncher<Intent>
+    internal lateinit var endSessionLauncher: ActivityResultLauncher<Intent>
+
     private var onLoginSuccess: (() -> Unit)? = null
+    private var onLoggedOut: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ① Register the launcher before you ever use it:
+        // 1) Register your launchers FIRST
         authLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
-            // We don’t actually need the resultCode/data here,
-            // since the browser redirect comes back via onNewIntent()
             Log.d("AUTH_MANAGER", "Returned from browser to activity result")
+            // Note: actual token handling happens in onNewIntent()
         }
 
+        endSessionLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            AuthManager.handleEndSessionResponse(result.data ?: Intent()) {
+                onLoggedOut?.invoke()
+                onLoggedOut = null
+            }
+        }
+
+        // 2) THEN always load your Compose UI
         setContent {
             MaterialTheme {
-                AppNavGraph()
+                AppNavGraph(
+                    onLoggedOutCallback = { callback ->
+                        onLoggedOut = callback
+                    },
+                    startDestination = if (TokenStorage.getAccessToken(this) != null) "mainMenu" else "login"
+                )
             }
         }
     }
@@ -64,6 +82,15 @@ class MainActivity : ComponentActivity() {
     fun startLogin(onSuccess: () -> Unit) {
         onLoginSuccess = onSuccess
         AuthManager.startAuthWithLauncher(this, authLauncher)
+    }
+
+    fun startLogout() {
+        // 1) Grab & build the logout intent *before* clearing local state
+        val endSessionIntent = AuthManager.getEndSessionIntent(this)
+        endSessionLauncher.launch(endSessionIntent)
+
+        // 2) Now that the browser has been kicked off, clear local tokens
+        TokenStorage.clearTokens(this)
     }
 
     /**
@@ -88,8 +115,21 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun AppNavGraph(startDestination: String = "login") {
+fun AppNavGraph(
+    startDestination: String = "login",
+    onLoggedOutCallback: ((onLoggedOut: () -> Unit) -> Unit)
+) {
     val navController = rememberNavController()
+
+    LaunchedEffect(navController) {
+        onLoggedOutCallback {
+            navController.navigate("login") {
+                popUpTo(navController.graph.startDestinationId) {
+                    inclusive = true
+                }
+            }
+        }
+    }
 
     NavHost(navController = navController, startDestination = startDestination) {
 

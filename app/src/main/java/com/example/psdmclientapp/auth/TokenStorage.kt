@@ -10,6 +10,7 @@ object TokenStorage {
     private const val PREF_NAME = "secure_prefs"
     private const val KEY_ACCESS_TOKEN  = "access_token"
     private const val KEY_REFRESH_TOKEN = "refresh_token"
+    private const val KEY_ID_TOKEN = "id_token"
 
     private fun prefs(context: Context) = EncryptedSharedPreferences.create(
         context,
@@ -20,6 +21,15 @@ object TokenStorage {
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
+
+    fun saveIdToken(context: Context, idToken: String?) {
+        prefs(context).edit {
+            if (idToken != null) putString(KEY_ID_TOKEN, idToken)
+        }
+    }
+
+    fun getIdToken(context: Context): String? =
+        prefs(context).getString(KEY_ID_TOKEN, null)
 
     fun saveTokens(context: Context, accessToken: String, refreshToken: String?) {
         try {
@@ -52,6 +62,19 @@ object TokenStorage {
             Log.e("TOKEN_STORAGE", "Failed to load refresh token", e)
             null
         }
+
+    fun clearTokens(context: Context) {
+        try {
+            prefs(context).edit {
+                remove(KEY_ACCESS_TOKEN)
+                remove(KEY_REFRESH_TOKEN)
+                remove(KEY_ID_TOKEN)
+            }
+            Log.d("TOKEN_STORAGE", "Cleared both access + refresh tokens")
+        } catch (e: Exception) {
+            Log.e("TOKEN_STORAGE", "Failed to clear tokens", e)
+        }
+    }
 }
 
 

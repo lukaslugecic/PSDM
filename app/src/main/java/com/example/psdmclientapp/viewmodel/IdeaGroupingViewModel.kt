@@ -17,6 +17,7 @@ import javax.inject.Inject
 import com.example.psdmclientapp.model.request.AttributeRequest
 import com.example.psdmclientapp.network.SessionApiService
 import com.example.psdmclientapp.network.SolutionApiService
+import com.example.psdmclientapp.network.UserApiService
 import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -28,6 +29,7 @@ class IdeaGroupingViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val sessionApi: SessionApiService,
     private val solutionApi: SolutionApiService,
+    private val userApi: UserApiService
 ) : ViewModel() {
 
     private val sessionId: Long = checkNotNull(savedStateHandle["sessionId"])
@@ -50,9 +52,7 @@ class IdeaGroupingViewModel @Inject constructor(
             val sessionDetails = sessionApi.getSessionDetails(sessionId)
             val solutions = solutionApi.getSolutionsByParentSessionIdOrSessionId(sessionId)
 
-            val currentUser = UserResponse(
-                3L, "Ime", "Prezime", "Email", LocalDate.now(), 1L
-            )
+            val currentUser = userApi.getCurrentUser()
 
             state = state.copy(
                 duration = sessionDetails.body()?.session?.duration,

@@ -50,7 +50,7 @@ class TokenAuthenticator(
         if (newAccess != null) {
             TokenStorage.saveTokens(context, newAccess!!, newRefresh)
             // use the public getter .request() instead of the field
-            val originalReq = response.request()
+            val originalReq = response.request
             return originalReq.newBuilder()
                 .header("Authorization", "Bearer $newAccess")
                 .build()
@@ -63,9 +63,9 @@ class TokenAuthenticator(
         var res: okhttp3.Response? = response
         var cnt = 1
         // use the public getter .priorResponse()
-        while (res?.priorResponse() != null) {
+        while (res?.priorResponse != null) {
             cnt++
-            res = res.priorResponse()
+            res = res.priorResponse
         }
         return cnt
     }

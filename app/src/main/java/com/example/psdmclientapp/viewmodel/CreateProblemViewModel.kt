@@ -19,6 +19,7 @@ import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
 import com.example.psdmclientapp.network.MethodApiService
 import com.example.psdmclientapp.network.ProblemApiService
 import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.UserApiService
 import kotlinx.coroutines.launch
 import kotlin.Long
 
@@ -27,10 +28,13 @@ class CreateProblemViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val sessionApi: SessionApiService,
     private val problemApi: ProblemApiService,
-    private val methodApi: MethodApiService
+    private val methodApi: MethodApiService,
+    private val userApi: UserApiService
 ) : ViewModel() {
 
     private val problemId: Long? = savedStateHandle["problemId"]
+
+    private var userId: Long? = null
 
     var title by mutableStateOf("")
     var description by mutableStateOf("")
@@ -66,6 +70,7 @@ class CreateProblemViewModel @Inject constructor(
 
                 problemSolvingMethods = methodApi.getSolvingSolvingMethods()
                 decisionMakingMethods = methodApi.getDecisionMakingMethods()
+                userId = userApi.getCurrentUser().id
 
             } catch (e: Exception) {
                 errorMessage = "Failed to load methods: ${e.message}"
@@ -99,7 +104,7 @@ class CreateProblemViewModel @Inject constructor(
                         ProblemRequest(
                             title = title,
                             description = description,
-                            moderatorId = 1L,
+                            moderatorId = userId!!,
                         ),
                         SessionRequest(
                             problemId = 0,

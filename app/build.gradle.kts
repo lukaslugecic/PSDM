@@ -81,6 +81,8 @@ dependencies {
     implementation ("net.openid:appauth:0.11.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
+    implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
+
 
 
     testImplementation(libs.junit)

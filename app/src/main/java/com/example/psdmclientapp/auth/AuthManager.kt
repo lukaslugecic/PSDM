@@ -22,6 +22,7 @@ object AuthManager {
     const val REDIRECT_URI  = "com.example.psdmclientapp://oauth/callback"
     private const val AUTH_ENDPOINT  = "http://192.168.186.220:8080/realms/psdm-realm/protocol/openid-connect/auth"
     private const val TOKEN_ENDPOINT = "http://192.168.186.220:8080/realms/psdm-realm/protocol/openid-connect/token"
+    private const val END_SESSION_ENDPOINT = "http://192.168.186.220:8080/realms/psdm-realm/protocol/openid-connect/logout"
 
 
     private val allowHttpConnectionBuilder = ConnectionBuilder { uri: Uri ->
@@ -40,7 +41,9 @@ object AuthManager {
 
     val serviceConfig = AuthorizationServiceConfiguration(
         AUTH_ENDPOINT.toUri(),
-        TOKEN_ENDPOINT.toUri()
+        TOKEN_ENDPOINT.toUri(),
+        null,
+        END_SESSION_ENDPOINT.toUri()
     )
 
     fun startAuthWithLauncher(
@@ -52,7 +55,10 @@ object AuthManager {
             CLIENT_ID,
             ResponseTypeValues.CODE,
             REDIRECT_URI.toUri()
-        ).build()
+        )
+            .setScope("openid profile email offline_access")
+            .build()
+
         pendingAuthRequest = authRequest
 
         AuthorizationService(activity, insecureConfig).let { svc ->
@@ -83,6 +89,9 @@ object AuthManager {
             return
         }
 
+        response.idToken?.let { TokenStorage.saveIdToken(context, it) }
+
+
         Log.d("AUTH_MANAGER", "Authorization response received: $response")
         Log.d("AUTH_MANAGER", "Authorization response id token received: ${response.idToken}")
         pendingAuthRequest = null
@@ -93,26 +102,24 @@ object AuthManager {
         val authService = AuthorizationService(context, insecureConfig)
         try {
             authService.performTokenRequest(tokenRequest) { tokenResponse, ex ->
-                if (ex != null) {
-                    Log.e("AUTH_MANAGER", "Token exchange FAILED: error=${ex.error} desc=${ex.errorDescription}")
-                    callback(null)
-                } else {
-                    Log.d("AUTH_MANAGER", "Token exchange HTTP response: $tokenResponse")
-                    val accessToken = tokenResponse?.accessToken
-                    val refreshToken = tokenResponse?.refreshToken
-
-                    if (!accessToken.isNullOrEmpty()) {
-                        Log.d("AUTH_MANAGER", "Access token received: $accessToken")
-                        TokenStorage.saveTokens(
-                            context,
-                            tokenResponse.accessToken!!,
-                            tokenResponse.refreshToken
-                        )
-                        callback(accessToken)
-                    } else {
-                        Log.e("AUTH_MANAGER", "Access token was null or empty")
-                        callback(null)
+                if (tokenResponse != null) {
+                    // ① Save the ID token that Keycloak returned here:
+                    tokenResponse.idToken?.let { idToken ->
+                        Log.d("AUTH_MANAGER", "ID token from token endpoint: $idToken")
+                        TokenStorage.saveIdToken(context, idToken)
                     }
+
+                    // ② Save your access + refresh tokens as before
+                    TokenStorage.saveTokens(
+                        context,
+                        tokenResponse.accessToken!!,
+                        tokenResponse.refreshToken
+                    )
+
+                    callback(tokenResponse.accessToken)
+                } else {
+                    Log.e("AUTH_MANAGER", "token exchange error", ex)
+                    callback(null)
                 }
                 authService.dispose()
             }
@@ -120,6 +127,42 @@ object AuthManager {
             Log.e("AUTH_MANAGER", "performTokenRequest threw", e)
             callback(null)
         }
+    }
+
+
+    /**
+     * Returns an Intent you can launch to do a Keycloak logout (end‐session) flow.
+     * Keycloak must be configured with this post‐logout redirect URI.
+     */
+    fun getEndSessionIntent(context: Context): Intent {
+        // 1) Grab the last ID token you saved (or null if none)
+        val idTokenHint = TokenStorage.getIdToken(context)
+
+        // 2) Build the EndSessionRequest *with both* id token hint AND redirect URI
+        val request = EndSessionRequest.Builder(serviceConfig)
+            .setIdTokenHint(idTokenHint)                        // must set this
+            .setPostLogoutRedirectUri(REDIRECT_URI.toUri())     // *must* set this too!
+            .build()
+
+        // 3) Return the browser Intent
+        return AuthorizationService(context, insecureConfig)
+            .getEndSessionRequestIntent(request)
+    }
+
+
+    /**
+     * Call this from your Activity's `onNewIntent` to complete the logout flow.
+     * After this, the app should clear tokens and navigate to login.
+     */
+    fun handleEndSessionResponse(intent: Intent, onComplete: () -> Unit) {
+        val resp = EndSessionResponse.fromIntent(intent)
+        val ex   = AuthorizationException.fromIntent(intent)
+        if (resp != null) {
+            Log.d("AUTH_MANAGER", "EndSessionResponse OK")
+        } else {
+            Log.e("AUTH_MANAGER", "EndSession failed", ex)
+        }
+        onComplete()
     }
 }
 
