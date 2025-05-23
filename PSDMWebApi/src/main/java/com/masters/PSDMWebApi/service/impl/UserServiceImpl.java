@@ -58,6 +58,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public String getCurrentSessionUrl(Long userId) {
+        Session currentSession = userRepository.findById(userId)
+                .map(User::getSessions)
+                .flatMap(sessions -> sessions.stream()
+                        .filter(session -> session.getStart().isBefore(LocalDateTime.now())
+                                && session.getEnd().isAfter(LocalDateTime.now()))
+                        .findFirst()
+                )
+                .orElse(null);
+
+        if (currentSession != null) {
+            Long problemId = currentSession.getProblem().getId();
+            Long sessionId = currentSession.getId();
+            String attributes = currentSession.getAttributes();
+            String rez = problemId + "/" + sessionId + "/" + attributes;
+            log.error(rez);
+            return rez;
+        }
+
+        return null;
+    }
+
+    @Override
     public Boolean checkParentSession(Long userId) {
         return userRepository.findById(userId)
                 .map(User::getSessions)

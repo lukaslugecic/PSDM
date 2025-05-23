@@ -15,6 +15,8 @@ public interface UserService {
 
     Long getCurrentSessionId(Long userId, boolean isSubSession);
 
+    String getCurrentSessionUrl(Long userId);
+
     Boolean checkParentSession(Long userId);
 
     void registerNewUserFromJwt(Jwt jwt);

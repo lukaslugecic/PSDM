@@ -277,6 +277,7 @@ public class SessionServiceImpl implements SessionService {
         subSession.setStart(start);
         subSession.setEnd(start.plusSeconds(duration));
         subSession.setDuration(parentSession.getDuration());
+        subSession.setAttributes(parentSession.getAttributes());
         subSession.setDecisionMakingMethod(parentSession.getDecisionMakingMethod());
         subSession.setProblemSolvingMethod(parentSession.getProblemSolvingMethod());
         subSession.setProblem(parentSession.getProblem());

@@ -14,6 +14,7 @@ public class SessionDTO {
     private Long problemSolvingMethodId;
     private Long decisionMakingMethodId;
     private Long duration;
+    private String attributes;
     private LocalDateTime start;
     private LocalDateTime end;
     private Long parentSessionId;

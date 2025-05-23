@@ -33,6 +33,9 @@ public class Session {
     @Column(name = "duration", nullable = false)
     private Duration duration;
 
+    @Column(name = "attributes")
+    private String attributes;
+
     @ManyToOne
     @JoinColumn(name = "problem_solving_method_id")
     private ProblemSolvingMethod problemSolvingMethod;
