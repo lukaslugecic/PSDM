@@ -9,11 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.psdmclientapp.enum.DecisionMakingMethod
 import com.example.psdmclientapp.enum.ProblemSolvingMethod
 import com.example.psdmclientapp.model.request.SolutionRequest
-import com.example.psdmclientapp.model.UserResponse
 import com.example.psdmclientapp.state.ProblemSolvingSessionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import javax.inject.Inject
 import com.example.psdmclientapp.model.request.AttributeRequest
 import com.example.psdmclientapp.network.SessionApiService

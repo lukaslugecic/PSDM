@@ -83,6 +83,8 @@ dependencies {
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.9.0")
 
+    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
+
 
 
     testImplementation(libs.junit)

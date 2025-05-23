@@ -14,21 +14,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.psdmclientapp.MainActivity
 import com.example.psdmclientapp.R
-import com.example.psdmclientapp.auth.AuthManager
-import com.example.psdmclientapp.auth.TokenStorage
+import com.example.psdmclientapp.viewmodel.MainMenuViewModel
 
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun MainMenuScreen(navController: NavHostController) {
+fun MainMenuScreen(
+    navController: NavHostController,
+    viewModel: MainMenuViewModel = hiltViewModel()
+) {
 
     val context = LocalContext.current
-    val activity = (context as? MainActivity)
+    val error = viewModel.errorMessage
 
     Column(
         modifier = Modifier
@@ -50,9 +55,26 @@ fun MainMenuScreen(navController: NavHostController) {
         Button(onClick = { navController.navigate("myProblems") }) {
             Text("My Problems")
         }
-        Button(onClick = { navController.navigate("joinSession") }) {
+
+        Button(onClick = {
+            viewModel.clearError()
+            viewModel.onJoinSessionRequested { subPath ->
+                // navigate to ideaGeneration/<subPath>
+                navController.navigate("ideaGeneration/$subPath")
+            }
+        }) {
             Text("Join Session")
         }
+
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
+
+        Spacer(Modifier.weight(1f))
 
         Button(onClick = {
             // clear any cookies immediately

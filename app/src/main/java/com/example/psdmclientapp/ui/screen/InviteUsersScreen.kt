@@ -32,10 +32,6 @@ fun InviteUsersScreen(
     val isLoading = viewModel.isLoading
     val errorMessage = viewModel.errorMessage
 
-    LaunchedEffect(Unit) {
-        viewModel.loadUsers()
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Invite Users") })

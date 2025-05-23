@@ -21,6 +21,10 @@ import com.example.psdmclientapp.network.ProblemApiService
 import com.example.psdmclientapp.network.SessionApiService
 import com.example.psdmclientapp.network.UserApiService
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import kotlin.Long
 
 @HiltViewModel
@@ -51,6 +55,8 @@ class CreateProblemViewModel @Inject constructor(
 
 
     val attributeTitles = mutableStateListOf<String>()
+
+    var encodedAttributes: String? = mutableStateOf<String?>(null).toString()
 
     var isLoading by mutableStateOf(false)
     var errorMessage by mutableStateOf<String?>(null)
@@ -85,6 +91,9 @@ class CreateProblemViewModel @Inject constructor(
             return
         }
 
+        val json = Json.encodeToString(attributeTitles.map{ it.trim() }.toList())
+        encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+
         try {
             isLoading = true
             errorMessage = null
@@ -110,7 +119,8 @@ class CreateProblemViewModel @Inject constructor(
                             problemId = 0,
                             problemSolvingMethodId = selectedSolvingMethodId!!,
                             decisionMakingMethodId = selectedDecisionMethodId!!,
-                            duration = totalDurationSeconds
+                            duration = totalDurationSeconds,
+                            attributes = encodedAttributes.toString()
                         )
                     )
                 )
@@ -120,7 +130,8 @@ class CreateProblemViewModel @Inject constructor(
                         problemId = problemId,
                         problemSolvingMethodId = selectedSolvingMethodId!!,
                         decisionMakingMethodId = selectedDecisionMethodId!!,
-                        duration = totalDurationSeconds
+                        duration = totalDurationSeconds,
+                        attributes = encodedAttributes.toString()
                     )
                 )
             }

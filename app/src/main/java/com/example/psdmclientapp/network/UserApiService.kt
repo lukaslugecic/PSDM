@@ -1,6 +1,7 @@
 package com.example.psdmclientapp.network
 
 import com.example.psdmclientapp.model.UserResponse
+import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -10,6 +11,9 @@ interface UserApiService {
 
     @GET("user/currentSubSession/{userId}")
     suspend fun getCurrentSubSessionId(@Path("userId") userId: Long) : Long
+
+    @GET("user/currentSubSessionUrl/{userId}")
+    suspend fun getCurrentSubSessionUrl(@Path("userId") userId: Long) : Response<String>
 
     @GET("user/checkParentSession/{userId}")
     suspend fun checkParentSession(@Path("userId") userId: Long) : Boolean
