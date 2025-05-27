@@ -1,5 +1,6 @@
 package com.example.psdmclientapp.network
 
+import com.example.psdmclientapp.model.SolutionDetailResponse
 import com.example.psdmclientapp.model.SolutionResponse
 import com.example.psdmclientapp.model.SolutionScoreResponse
 import com.example.psdmclientapp.model.request.GroupSolutionRequest
@@ -19,6 +20,9 @@ interface SolutionApiService {
 
     @GET("solution/session/parent/{sessionId}")
     suspend fun getSolutionsByParentSessionIdOrSessionId(@Path("sessionId") sessionId: Long) : List<SolutionResponse>
+
+    @GET("solution/view/session/{sessionId}")
+    suspend fun getSolutionDetailsBySessionId(@Path("sessionId") sessionId: Long) : List<SolutionDetailResponse>
 
     @POST("solution/group")
     suspend fun groupSolutions(@Body groupSolutionRequest: GroupSolutionRequest) : SolutionResponse

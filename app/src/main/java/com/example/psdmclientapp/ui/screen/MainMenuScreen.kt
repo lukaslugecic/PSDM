@@ -52,7 +52,7 @@ fun MainMenuScreen(
         Button(onClick = { navController.navigate("createProblem") }) {
             Text("Create Problem")
         }
-        Button(onClick = { navController.navigate("myProblems") }) {
+        Button(onClick = { navController.navigate("problems") }) {
             Text("My Problems")
         }
 

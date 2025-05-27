@@ -26,8 +26,10 @@ import com.example.psdmclientapp.ui.screen.CreateSessionScreen
 import com.example.psdmclientapp.ui.screen.DecisionResultScreen
 import com.example.psdmclientapp.ui.screen.IdeaGroupingScreen
 import com.example.psdmclientapp.ui.screen.LoginScreen
-import com.example.psdmclientapp.ui.screen.MyProblemsScreen
+import com.example.psdmclientapp.ui.screen.ProblemsScreen
 import com.example.psdmclientapp.ui.screen.NominalGroupScreen
+import com.example.psdmclientapp.ui.screen.ProblemSessionsScreen
+import com.example.psdmclientapp.ui.screen.SessionSolutionsScreen
 import com.example.psdmclientapp.ui.screen.VotingScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.json.Json
@@ -149,7 +151,29 @@ fun AppNavGraph(
         }
 
 
-        composable("myProblems") { MyProblemsScreen(navController) }
+        composable("problems") { ProblemsScreen(navController) }
+
+        composable(
+            route = "problemSessions/{problemId}",
+            arguments = listOf(
+                navArgument("problemId") { type = NavType.LongType },
+            )
+        ) { backStackEntry ->
+            val problemId = backStackEntry.arguments?.getLong("problemId") ?: 0L
+
+            ProblemSessionsScreen(navController, problemId)
+        }
+
+        composable(
+            route = "sessionSolutions/{sessionId}",
+            arguments = listOf(
+                navArgument("sessionId") { type = NavType.LongType },
+            )
+        ) { backStackEntry ->
+            val sessionId = backStackEntry.arguments?.getLong("sessionId") ?: 0L
+
+            SessionSolutionsScreen(navController, sessionId)
+        }
 
         composable(
             route = "inviteUsers/{problemId}/{sessionId}/{attributes}",

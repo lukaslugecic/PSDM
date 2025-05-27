@@ -1,7 +1,10 @@
 package com.example.psdmclientapp.model
 
-data class SessionDetailsResponse(
-    val problem: ProblemResponse,
-    val session: SessionResponse,
-    val parentSessionId: Long?,
+data class SessionDetailsResponse (
+    val id: Long,
+    val start: String,
+    val end: String,
+    val problemSolvingMethod: String,
+    val decisionMakingMethod: String,
+    val attributes: List<String>
 )
