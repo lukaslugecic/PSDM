@@ -1,11 +1,13 @@
 package com.masters.PSDMWebApi.mapper;
 
 import com.masters.PSDMWebApi.dto.SessionDTO;
+import com.masters.PSDMWebApi.dto.SessionDetailsDTO;
 import com.masters.PSDMWebApi.dto.request.SessionRequestDTO;
 import com.masters.PSDMWebApi.model.DecisionMakingMethod;
 import com.masters.PSDMWebApi.model.Problem;
 import com.masters.PSDMWebApi.model.ProblemSolvingMethod;
 import com.masters.PSDMWebApi.model.Session;
+import com.masters.PSDMWebApi.util.AttributeConverter;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -27,6 +29,19 @@ public class SessionMapper {
         if(session.getParentSession() != null){
             dto.setParentSessionId(session.getParentSession().getId());
         }
+        return dto;
+    }
+
+    public static SessionDetailsDTO toDetailsDTO(Session session) {
+        if (session == null) return null;
+
+        SessionDetailsDTO dto = new SessionDetailsDTO();
+        dto.setId(session.getId());
+        dto.setStart(session.getStart());
+        dto.setEnd(session.getEnd());
+        dto.setProblemSolvingMethod(session.getProblemSolvingMethod().getTitle());
+        dto.setDecisionMakingMethod(session.getDecisionMakingMethod().getTitle());
+        dto.setAttributes(AttributeConverter.decodeAttributes(session.getAttributes()));
         return dto;
     }
 

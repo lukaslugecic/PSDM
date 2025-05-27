@@ -1,6 +1,7 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.SolutionDTO;
+import com.masters.PSDMWebApi.dto.SolutionDetailsDTO;
 import com.masters.PSDMWebApi.dto.SolutionScoreDTO;
 import com.masters.PSDMWebApi.dto.request.GroupSolutionRequestDTO;
 import com.masters.PSDMWebApi.dto.request.SolutionRequestDTO;
@@ -60,6 +61,14 @@ public class SolutionController {
     @GetMapping("/bestSolutions/{sessionId}")
     public List<SolutionScoreDTO> getBestSolutions(@PathVariable Long sessionId) {
         return solutionService.getBestSolutions(sessionId);
+    }
+
+    @GetMapping("/view/session/{sessionId}")
+    public List<SolutionDetailsDTO> getSolutionsDetailsBySessionId(@PathVariable Long sessionId) {
+        return solutionService.getSolutionsByParentSessionIdOrSessionId(sessionId)
+                .stream()
+                .map(SolutionMapper::toDetailsDTO)
+                .toList();
     }
 }
 

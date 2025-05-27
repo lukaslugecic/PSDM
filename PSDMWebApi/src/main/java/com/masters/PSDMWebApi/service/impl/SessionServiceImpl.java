@@ -1,6 +1,6 @@
 package com.masters.PSDMWebApi.service.impl;
 
-import com.masters.PSDMWebApi.dto.SessionDetailsDTO;
+import com.masters.PSDMWebApi.dto.ProblemSessionDTO;
 import com.masters.PSDMWebApi.dto.request.CreateProblemAndSessionRequestDTO;
 import com.masters.PSDMWebApi.mapper.ProblemMapper;
 import com.masters.PSDMWebApi.mapper.SessionMapper;
@@ -39,10 +39,10 @@ public class SessionServiceImpl implements SessionService {
     }
 
     @Override
-    public Optional<SessionDetailsDTO> getSessionDetailsById(Long id) {
+    public Optional<ProblemSessionDTO> getSessionDetailsById(Long id) {
         return sessionRepository.findById(id)
                 .flatMap(session -> {
-                        SessionDetailsDTO detailsDTO = new SessionDetailsDTO(
+                        ProblemSessionDTO detailsDTO = new ProblemSessionDTO(
                                 ProblemMapper.toDTO(session.getProblem()),
                                 SessionMapper.toDTO(session),
                                 session.getParentSession() != null ? session.getParentSession().getId() : null
@@ -151,6 +151,11 @@ public class SessionServiceImpl implements SessionService {
         handleSubsessions(session);
 
         sessionRepository.save(session);
+    }
+
+    @Override
+    public List<Session> getAllSessionsByProblemId(Long problemId) {
+        return sessionRepository.findByProblemId(problemId);
     }
 
     private void addUsersToSession(Session session, List<User> users) {

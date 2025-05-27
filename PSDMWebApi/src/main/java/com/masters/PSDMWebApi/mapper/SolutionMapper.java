@@ -2,6 +2,7 @@ package com.masters.PSDMWebApi.mapper;
 
 import com.masters.PSDMWebApi.dto.AttributeDTO;
 import com.masters.PSDMWebApi.dto.SolutionDTO;
+import com.masters.PSDMWebApi.dto.SolutionDetailsDTO;
 import com.masters.PSDMWebApi.dto.request.SolutionRequestDTO;
 import com.masters.PSDMWebApi.model.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,19 +15,6 @@ public class SolutionMapper {
 
     public static SolutionDTO toDTO(Solution solution) {
         if (solution == null) return null;
-
-        List<AttributeDTO> attributeDTOs = null;
-        if (solution.getAttributes() != null) {
-            attributeDTOs = solution.getAttributes().stream()
-                    .map(attr -> new AttributeDTO(
-                            attr.getId(),
-                            solution.getId(),
-                            attr.getTitle(),
-                            attr.getValue()
-                    ))
-                    .toList();
-        }
-
         return new SolutionDTO(
                 solution.getId(),
                 solution.getTitle(),
@@ -36,7 +24,18 @@ public class SolutionMapper {
                 solution.getCreatedTime(),
                 solution.getChosen(),
                 solution.getGrouped(),
-                attributeDTOs
+                getAttributesForSolution(solution)
+        );
+    }
+
+    public static SolutionDetailsDTO toDetailsDTO(Solution solution) {
+        if (solution == null) return null;
+        return new SolutionDetailsDTO(
+                solution.getId(),
+                solution.getTitle(),
+                solution.getUser().getFirstName(),
+                solution.getUser().getLastName(),
+                getAttributesForSolution(solution)
         );
     }
 
@@ -79,5 +78,20 @@ public class SolutionMapper {
         }
 
         return entity;
+    }
+
+
+    private static List<AttributeDTO> getAttributesForSolution(Solution solution) {
+        if (solution.getAttributes() != null) {
+            return solution.getAttributes().stream()
+                    .map(attr -> new AttributeDTO(
+                            attr.getId(),
+                            solution.getId(),
+                            attr.getTitle(),
+                            attr.getValue()
+                    ))
+                    .toList();
+        }
+        return null;
     }
 }

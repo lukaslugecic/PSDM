@@ -1,6 +1,7 @@
 package com.masters.PSDMWebApi.controller;
 
 import com.masters.PSDMWebApi.dto.SessionDTO;
+import com.masters.PSDMWebApi.dto.ProblemSessionDTO;
 import com.masters.PSDMWebApi.dto.SessionDetailsDTO;
 import com.masters.PSDMWebApi.dto.request.CreateProblemAndSessionRequestDTO;
 import com.masters.PSDMWebApi.dto.request.InviteUsersRequestDTO;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/session")
@@ -22,7 +25,7 @@ public class SessionController {
     private final SessionService sessionService;
 
     @GetMapping("/details/{id}")
-    public ResponseEntity<SessionDetailsDTO> getSessionDetailsById(@PathVariable Long id) {
+    public ResponseEntity<ProblemSessionDTO> getSessionDetailsById(@PathVariable Long id) {
         return sessionService.getSessionDetailsById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -49,10 +52,17 @@ public class SessionController {
         );
     }
 
-    @PostMapping("addUsers")
+    @PostMapping("/addUsers")
     public ResponseEntity<Void> addUsers(@RequestBody InviteUsersRequestDTO dto) {
         sessionService.addUsers(dto.getSessionId(), dto.getUserIds());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/view/problem/{problemId}")
+    public List<SessionDetailsDTO> getSessionsByProblemId(@PathVariable Long problemId) {
+        return sessionService.getAllSessionsByProblemId(problemId).stream()
+                .map(SessionMapper::toDetailsDTO)
+                .toList();
     }
 
 }
