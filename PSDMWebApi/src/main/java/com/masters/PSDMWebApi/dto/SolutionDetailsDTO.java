@@ -11,6 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SolutionDetailsDTO {
     private Long id;
+    private String problemTitle;
     private String title;
     private String firstName;
     private String lastName;

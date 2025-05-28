@@ -12,6 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class SessionDetailsDTO {
     private Long id;
+    private String problemTitle;
     private String problemSolvingMethod;
     private String decisionMakingMethod;
     private LocalDateTime start;

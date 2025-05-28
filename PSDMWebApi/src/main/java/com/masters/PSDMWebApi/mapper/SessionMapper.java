@@ -37,6 +37,7 @@ public class SessionMapper {
 
         SessionDetailsDTO dto = new SessionDetailsDTO();
         dto.setId(session.getId());
+        dto.setProblemTitle(session.getProblem().getTitle());
         dto.setStart(session.getStart());
         dto.setEnd(session.getEnd());
         dto.setProblemSolvingMethod(session.getProblemSolvingMethod().getTitle());

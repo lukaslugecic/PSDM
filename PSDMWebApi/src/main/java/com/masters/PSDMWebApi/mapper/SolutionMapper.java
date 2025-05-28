@@ -32,6 +32,7 @@ public class SolutionMapper {
         if (solution == null) return null;
         return new SolutionDetailsDTO(
                 solution.getId(),
+                solution.getProblem().getTitle(),
                 solution.getTitle(),
                 solution.getUser().getFirstName(),
                 solution.getUser().getLastName(),
