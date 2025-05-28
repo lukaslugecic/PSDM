@@ -26,7 +26,7 @@ fun SessionSolutionsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Solutions for Session #$sessionId") })
+            TopAppBar(title = { Text("Solutions for Problem: ${solutions.firstOrNull()?.problemTitle}") })
         }
     ) { paddingValues ->
         Column(

@@ -32,7 +32,7 @@ fun ProblemSessionsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Sessions for Problem #$problemId") }
+                title = { Text("Sessions for Problem: ${sessions.firstOrNull()?.problemTitle}") }
             )
         }
     ) { paddingValues ->
