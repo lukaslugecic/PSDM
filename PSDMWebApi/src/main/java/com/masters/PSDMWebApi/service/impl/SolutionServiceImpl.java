@@ -104,7 +104,6 @@ public class SolutionServiceImpl implements SolutionService {
 
     private List<SolutionScoreDTO> getMajorityRuleFinalSolution(Session session) {
         List<Solution> solutions = getSolutionsByParentSessionIdOrSessionId(session.getId());
-        // TODO check if voter voted for only one solution
 
         Map<Long, Double> scores = solutions.stream()
                 .filter(s -> s.getVotes() != null && !s.getVotes().isEmpty())
@@ -115,22 +114,24 @@ public class SolutionServiceImpl implements SolutionService {
                                 .count()
                 ));
 
-//        double totalVotes = scores.values().stream()
-//                .mapToDouble(Double::doubleValue)
-//                .sum();
-//
-//        double majorityThreshold = totalVotes / 2 + 1;
-//
-//        Map<Long, Double> scoresOverThreshold = scores.entrySet().stream()
-//                .filter(entry -> entry.getValue() >= majorityThreshold)
-//                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        int totalVotes = solutions.stream()
+                .filter(s -> s.getVotes() != null)
+                .mapToInt(s -> s.getVotes().size())
+                .sum();
 
-        Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
-        singleBestSolutionId.ifPresent(this::chooseWinningSolution);
-        log.info("Single best solution for majority rule found: {}", singleBestSolutionId);
+        double majorityThreshold = totalVotes / 2.0;
+
+        Optional<Long> winningSolutionId = scores.entrySet().stream()
+                .filter(entry -> entry.getValue() > majorityThreshold)
+                .map(Map.Entry::getKey)
+                .findFirst();
+
+        winningSolutionId.ifPresent(this::chooseWinningSolution);
+        log.info("Majority rule winner found: {}", winningSolutionId.orElse(null));
 
         return toScoredDTOList(scores);
     }
+
 
 
     private List<SolutionScoreDTO> getBordaRankingFinalSolution(Session session) {
@@ -150,8 +151,6 @@ public class SolutionServiceImpl implements SolutionService {
                                 .sum()
                 ));
 
-
-
         Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
         singleBestSolutionId.ifPresent(this::chooseWinningSolution);
         log.info("Single best solution for Borda ranking found: {}", singleBestSolutionId);
@@ -160,25 +159,30 @@ public class SolutionServiceImpl implements SolutionService {
     }
 
     private List<SolutionScoreDTO> getWeightedAverageWinnerFinalSolution(Session session) {
-
-        Double sumOfWeights = attributeService.getAllWeightsBySessionId(session.getId())
+        Double sumOfWeights = getAllWeightsByParentSessionIdOrSessionId(session.getId())
                 .stream()
                 .mapToDouble(Double::doubleValue)
                 .sum();
 
-        var scores = session.getSolutions().stream()
+        var scores = getSolutionsByParentSessionIdOrSessionId(session.getId()).stream()
                 .filter(s -> s != null && s.getVotes() != null && !s.getVotes().isEmpty())
                 .collect(Collectors.toMap(
                         Solution::getId,
                         s -> weightedAverage(s, sumOfWeights)
                 ));
 
-
         Optional<Long> singleBestSolutionId = getUniqueMaxEntry(scores);
         singleBestSolutionId.ifPresent(this::chooseWinningSolution);
         log.info("Single best solution for weighted average winner: {}", singleBestSolutionId);
 
         return toScoredDTOList(scores);
+    }
+
+    private List<Double> getAllWeightsByParentSessionIdOrSessionId(Long sessionId) {
+        return getSolutionsByParentSessionIdOrSessionId(sessionId)
+                .stream()
+                .map(solution -> attributeService.getWeightBySolutionId(solution.getId()))
+                .collect(Collectors.toList());
     }
 
     private double weightedAverage(Solution solution, Double sumOfWeights) {
@@ -188,7 +192,6 @@ public class SolutionServiceImpl implements SolutionService {
         double weightedSum = votes.stream()
                 .mapToDouble(v -> v.getValue() * weight)
                 .sum();
-
         return weightedSum / sumOfWeights;
     }
 
