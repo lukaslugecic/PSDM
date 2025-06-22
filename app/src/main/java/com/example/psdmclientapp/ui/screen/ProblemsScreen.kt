@@ -74,10 +74,29 @@ fun ProblemsScreen(
                                         Text("Start New Session")
                                     }
                                 } else {
-                                    Text(
-                                        text = "Solution: ${problemDetail.solution.title}",
-                                        color = Color.Green
-                                    )
+                                    Surface(
+                                        color = Color(0xFFE6F4EA), // light green background
+                                        shape = MaterialTheme.shapes.medium,
+                                        tonalElevation = 2.dp,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = "✅ Solution:",
+                                                color = Color(0xFF1B5E20), // dark green
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = problemDetail.solution.title,
+                                                color = Color(0xFF2E7D32), // medium green
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
                                 }
 
                                 Spacer(modifier = Modifier.weight(1f))

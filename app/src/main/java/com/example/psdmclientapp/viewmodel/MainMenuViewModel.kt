@@ -16,27 +16,22 @@ class MainMenuViewModel @Inject constructor(
     private val userApi: UserApiService
 ) : ViewModel() {
 
-    // hold the loaded current user (or null while loading / on error)
     var currentUserId by mutableStateOf<Long?>(null)
         private set
 
-    // an error message to surface if no session is found
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
     init {
-        // fetch “/user/me” right away
         viewModelScope.launch {
             try {
                 currentUserId = userApi.getCurrentUser().id
             } catch (e: Exception) {
-                // handle this gracefully if you want
-                errorMessage = "Failed to load current user"
+                errorMessage = "Failed to load current user."
             }
         }
     }
 
-    /** Call this when the “Join Session” button is tapped */
     fun onJoinSessionRequested(
         onNavigate: (subSessionPath: String) -> Unit
     ) {
@@ -55,7 +50,7 @@ class MainMenuViewModel @Inject constructor(
                     errorMessage = "No active sessions"
                 }
             } catch (e: Exception) {
-                errorMessage = "No active sessions2000 myid $myId"
+                errorMessage = "An error occurred while retrieving sessions."
             }
         }
     }

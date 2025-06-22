@@ -31,7 +31,7 @@ class VotingViewModel @Inject constructor(
     var state by mutableStateOf(VotingState())
         private set
 
-    var waintingEveryoneToVote by mutableStateOf(false)
+    var waitingEveryoneToVote by mutableStateOf(false)
         private set
 
     init {
@@ -48,55 +48,6 @@ class VotingViewModel @Inject constructor(
             val decisionMethod = session.body()?.session?.decisionMakingMethodId?.let {
                 DecisionMakingMethod.entries.first { m -> m.id == it }
             } ?: DecisionMakingMethod.MAJORITY_RULE
-
-            // only auto-vote if you’re the moderator AND exactly 3 solutions
-            if (session.body()?.problem?.moderatorId == user.id && solutions.size == 3) {
-                // pick the right hard-coded vote values
-
-                val votesValues1 = when (decisionMethod) {
-                    DecisionMakingMethod.AVERAGE_WINNER,
-                    DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER ->
-                        listOf(5.0, 4.0, 1.0)
-
-                    DecisionMakingMethod.BORDA_RANKING ->
-                        listOf(1.0, 2.0, 3.0)
-
-                    DecisionMakingMethod.MAJORITY_RULE ->
-                        listOf(1.0, 0.0, 0.0)
-                }
-
-                val voteRequests1 = solutions.mapIndexed { index, sol ->
-                    VoteRequest(
-                        userId     = 1L,
-                        solutionId = sol.id,
-                        value      = votesValues1[index]
-                    )
-                }
-
-                val votesValues2 = when (decisionMethod) {
-                    DecisionMakingMethod.AVERAGE_WINNER,
-                    DecisionMakingMethod.WEIGHTED_AVERAGE_WINNER ->
-                        listOf(2.0, 3.0, 4.0)
-
-                    DecisionMakingMethod.BORDA_RANKING ->
-                        listOf(3.0, 2.0, 1.0)
-
-                    DecisionMakingMethod.MAJORITY_RULE ->
-                        listOf(0.0, 0.0, 1.0)
-                }
-
-                val voteRequests2 = solutions.mapIndexed { index, sol ->
-                    VoteRequest(
-                        userId     = 2L,
-                        solutionId = sol.id,
-                        value      = votesValues2[index]
-                    )
-                }
-
-                val allVoteRequests: List<VoteRequest> = voteRequests1 + voteRequests2
-
-                voteApi.submitVotes(allVoteRequests)
-            }
 
             val initialRatings = solutions.associate { it.id to 3 }.toMutableMap()
             state = state.copy(
@@ -128,7 +79,7 @@ class VotingViewModel @Inject constructor(
                 }
                 voteApi.submitVotes(votes)
 
-                waintingEveryoneToVote = true
+                waitingEveryoneToVote = true
 
                 val maxDurationMillis = (state.maxDuration ?: 60L) * 1000  // default to 60s if null
                 val startTime = System.currentTimeMillis()
@@ -146,10 +97,10 @@ class VotingViewModel @Inject constructor(
                     kotlinx.coroutines.delay(3000)
                 }
 
-                waintingEveryoneToVote = false
+                waitingEveryoneToVote = false
                 onNavigate()
             } catch (e: Exception) {
-                waintingEveryoneToVote = false
+                waitingEveryoneToVote = false
                 state = state.copy(errorMessage = e.localizedMessage)
             }
         }

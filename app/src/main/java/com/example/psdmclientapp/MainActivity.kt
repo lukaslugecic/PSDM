@@ -218,8 +218,8 @@ fun AppNavGraph(
 
             println("ENCODED FROM URL : $attributesEncoded")
            // println("FIRST: ${attributeTitles[0]}")
-
             IdeaGenerationScreen(navController, problemId, sessionId, attributeTitles)
+
         }
 
         composable(

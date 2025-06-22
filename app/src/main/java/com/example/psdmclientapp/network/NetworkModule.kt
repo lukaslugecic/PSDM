@@ -64,7 +64,6 @@ object NetworkModule {
         TokenAuthenticator(ctx, authService)
 
 
-
     @Provides
     @Singleton
     fun provideOkHttpClient(

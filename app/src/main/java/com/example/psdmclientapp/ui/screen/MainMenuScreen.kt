@@ -83,7 +83,7 @@ fun MainMenuScreen(
 
             (context as? MainActivity)?.startLogout()
         }) {
-            Text("Log out")
+            Text("Log Out")
         }
 
     }
