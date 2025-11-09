@@ -1,4 +1,3 @@
-[PSDM_README_ROOT.md](https://github.com/user-attachments/files/23439199/PSDM_README_ROOT.md)
 # 🧩 PSDM – Problem Solving and Decision-Making System
 
 ## 📖 Overview
