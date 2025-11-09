@@ -34,7 +34,7 @@ The **PSDM Client App** is an Android mobile application that enables users to p
 - Majority Rule  
 
 ## 🔗 Related Repository
-➡️ **Backend API:** [PSDMWebApi](https://github.com/lukaslugecic/PSDMWebApi)
+➡️ **Backend API:** [PSDMWebApi](https://github.com/lukaslugecic/PSDM/tree/master/PSDMWebApi)
 
 ## ⚙️ Installation
 ```bash
