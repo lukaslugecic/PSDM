@@ -27,7 +27,7 @@ It is developed using **Spring Boot**, with layered architecture that handles au
 - Well-defined REST endpoints returning JSON data  
 
 ## 🔗 Related Repository
-➡️ **Mobile Client:** [PSDMClientApp](https://github.com/lukaslugecic/PSDMClientApp)
+➡️ **Mobile Client:** [PSDMClientApp](https://github.com/lukaslugecic/PSDM/tree/master/PSDMClientApp)
 
 ## ⚙️ Installation & Setup
 ```bash
