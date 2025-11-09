@@ -1,0 +1,121 @@
+package com.example.psdmclientapp.ui.screen
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.compose.material3.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.psdmclientapp.viewmodel.MyProblemsViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProblemsScreen(
+    navController: NavHostController,
+    viewModel: MyProblemsViewModel = hiltViewModel()
+) {
+    val problemDetails = viewModel.problemDetails
+    val isLoading = viewModel.isLoading
+    val error = viewModel.errorMessage
+
+    Scaffold(
+        topBar = { TopAppBar(title = { Text("My Problems") }) }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+
+            if (isLoading) {
+                CircularProgressIndicator()
+            } else if (error != null) {
+                Text("Error: $error", color = Color.Red)
+            } else {
+                problemDetails.forEach { problemDetail ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                    ) {
+
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                text = problemDetail.problem.title,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Text(
+                                text = problemDetail.problem.description,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Buttons row: left and right alignment
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Show "Start New Session" only when there's no solution yet
+                                if (problemDetail.solution == null) {
+                                    Button(
+                                        onClick = {
+                                            navController.navigate(
+                                                "createSession/${problemDetail.problem.id}"
+                                            )
+                                        }
+                                    ) {
+                                        Text("Start New Session")
+                                    }
+                                } else {
+                                    Surface(
+                                        color = Color(0xFFE6F4EA), // light green background
+                                        shape = MaterialTheme.shapes.medium,
+                                        tonalElevation = 2.dp,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                        ) {
+                                            Text(
+                                                text = "✅ Solution:",
+                                                color = Color(0xFF1B5E20), // dark green
+                                                style = MaterialTheme.typography.labelLarge
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = problemDetail.solution.title,
+                                                color = Color(0xFF2E7D32), // medium green
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.weight(1f))
+
+                                // "Sessions" button always aligned to the right
+                                Button(
+                                    onClick = {
+                                        navController.navigate(
+                                            "problemSessions/${problemDetail.problem.id}"
+                                        )
+                                    }
+                                ) {
+                                    Text("Sessions")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

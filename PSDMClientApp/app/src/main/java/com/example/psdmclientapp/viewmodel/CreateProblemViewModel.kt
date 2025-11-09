@@ -1,0 +1,162 @@
+package com.example.psdmclientapp.viewmodel
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import com.example.psdmclientapp.model.request.SessionRequest
+import com.example.psdmclientapp.model.SessionResponse
+import com.example.psdmclientapp.model.request.ProblemRequest
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
+import com.example.psdmclientapp.model.request.CreateProblemAndSessionRequest
+import com.example.psdmclientapp.model.DecisionMakingMethodResponse
+import com.example.psdmclientapp.model.ProblemResponse
+import com.example.psdmclientapp.model.ProblemSolvingMethodResponse
+import com.example.psdmclientapp.network.MethodApiService
+import com.example.psdmclientapp.network.ProblemApiService
+import com.example.psdmclientapp.network.SessionApiService
+import com.example.psdmclientapp.network.UserApiService
+import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
+import kotlin.Long
+
+@HiltViewModel
+class CreateProblemViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val sessionApi: SessionApiService,
+    private val problemApi: ProblemApiService,
+    private val methodApi: MethodApiService,
+    private val userApi: UserApiService
+) : ViewModel() {
+
+    private val problemId: Long? = savedStateHandle["problemId"]
+
+    private var userId: Long? = null
+
+    var title by mutableStateOf("")
+    var description by mutableStateOf("")
+
+    var selectedSolvingMethodId by mutableStateOf<Long?>(null)
+    var selectedDecisionMethodId by mutableStateOf<Long?>(null)
+
+    var problemSolvingMethods by mutableStateOf<List<ProblemSolvingMethodResponse>>(emptyList())
+    var decisionMakingMethods by mutableStateOf<List<DecisionMakingMethodResponse>>(emptyList())
+
+    var durationHours by mutableStateOf("")
+    var durationMinutes by mutableStateOf("")
+    var durationSeconds by mutableStateOf("")
+
+
+    val attributeTitles = mutableStateListOf<String>()
+
+    var encodedAttributes: String? = mutableStateOf<String?>(null).toString()
+
+    var isLoading by mutableStateOf(false)
+    var errorMessage by mutableStateOf<String?>(null)
+
+    init {
+        fetchMethods()
+    }
+
+    private fun fetchMethods() {
+        viewModelScope.launch {
+            try {
+                if(problemId != null) {
+                    val problemResponse : ProblemResponse = problemApi.getProblem(problemId)
+                    title = problemResponse.title
+                    description = problemResponse.description
+                }
+
+                problemSolvingMethods = methodApi.getSolvingSolvingMethods()
+                decisionMakingMethods = methodApi.getDecisionMakingMethods()
+                userId = userApi.getCurrentUser().id
+
+            } catch (e: Exception) {
+                errorMessage = "Failed to load methods: ${e.message}"
+            }
+        }
+    }
+
+    suspend fun submit(onSuccess: (SessionResponse) -> Unit) {
+        val validationError = validateInput()
+        if (validationError != null) {
+            errorMessage = validationError
+            return
+        }
+
+        val json = Json.encodeToString(attributeTitles.map{ it.trim() }.toList())
+        encodedAttributes = URLEncoder.encode(json, StandardCharsets.UTF_8.toString())
+
+        try {
+            isLoading = true
+            errorMessage = null
+
+            val totalDurationSeconds = (durationHours.toLongOrNull() ?: 0) * 3600 +
+                    (durationMinutes.toLongOrNull() ?: 0) * 60 +
+                    (durationSeconds.toLongOrNull() ?: 0)
+
+            if (totalDurationSeconds <= 0) {
+                errorMessage = "Session duration must be greater than 0."
+                return
+            }
+
+            val session = if (problemId == null) {
+                sessionApi.createProblemAndSession(
+                    CreateProblemAndSessionRequest(
+                        ProblemRequest(
+                            title = title,
+                            description = description,
+                            moderatorId = userId!!,
+                        ),
+                        SessionRequest(
+                            problemId = 0,
+                            problemSolvingMethodId = selectedSolvingMethodId!!,
+                            decisionMakingMethodId = selectedDecisionMethodId!!,
+                            duration = totalDurationSeconds,
+                            attributes = encodedAttributes.toString()
+                        )
+                    )
+                )
+            } else {
+                sessionApi.createSession(
+                    SessionRequest(
+                        problemId = problemId,
+                        problemSolvingMethodId = selectedSolvingMethodId!!,
+                        decisionMakingMethodId = selectedDecisionMethodId!!,
+                        duration = totalDurationSeconds,
+                        attributes = encodedAttributes.toString()
+                    )
+                )
+            }
+
+            onSuccess(session)
+
+        } catch (e: Exception) {
+            errorMessage = e.localizedMessage ?: "Unexpected error"
+        } finally {
+            isLoading = false
+        }
+    }
+
+    fun validateInput(): String? {
+        if (title.isBlank()) return "Problem title must not be empty."
+        if (description.isBlank()) return "Problem description must not be empty."
+        if (selectedSolvingMethodId == null) return "Please select a problem-solving method."
+        if (selectedDecisionMethodId == null) return "Please select a decision-making method."
+
+        val trimmedAttributes = attributeTitles.map { it.trim() }
+
+        if (trimmedAttributes.any { it.isEmpty() }) return "All attribute fields must be filled."
+        if (trimmedAttributes.toSet().size != trimmedAttributes.size) return "Attribute names must be unique."
+
+        return null
+    }
+
+}
