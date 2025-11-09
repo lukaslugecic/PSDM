@@ -1,0 +1,74 @@
+package com.masters.PSDMWebApi.controller;
+
+import com.masters.PSDMWebApi.dto.SolutionDTO;
+import com.masters.PSDMWebApi.dto.SolutionDetailsDTO;
+import com.masters.PSDMWebApi.dto.SolutionScoreDTO;
+import com.masters.PSDMWebApi.dto.request.GroupSolutionRequestDTO;
+import com.masters.PSDMWebApi.dto.request.SolutionRequestDTO;
+import com.masters.PSDMWebApi.mapper.SolutionMapper;
+import com.masters.PSDMWebApi.model.Solution;
+import com.masters.PSDMWebApi.service.SolutionService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/solution")
+@RequiredArgsConstructor
+@Slf4j
+public class SolutionController {
+
+    private final SolutionService solutionService;
+
+    @GetMapping("/session/{sessionId}")
+    public List<SolutionDTO> getAllSolutionsBySessionId(@PathVariable Long sessionId) {
+        return solutionService.getSolutionsBySessionId(sessionId)
+                .stream()
+                .map(SolutionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @GetMapping("/session/parent/{sessionId}")
+    public List<SolutionDTO> getSolutionsByParentSessionIdOrSessionId(@PathVariable Long sessionId) {
+        log.warn("parent sessionId: {}", sessionId);
+
+        return solutionService.getSolutionsByParentSessionIdOrSessionId(sessionId)
+                .stream()
+                .map(SolutionMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
+    @PostMapping
+    public ResponseEntity<SolutionDTO> createSolution(@RequestBody SolutionRequestDTO dto) {
+        Solution solution = SolutionMapper.toEntity(dto);
+        Solution saved = solutionService.createSolution(solution);
+        return ResponseEntity.ok(SolutionMapper.toDTO(saved));
+    }
+
+    @PostMapping("/group")
+    public ResponseEntity<SolutionDTO> groupSolutions(@RequestBody GroupSolutionRequestDTO dto) {
+        return ResponseEntity.ok(
+                SolutionMapper.toDTO(
+                        solutionService.groupSolutions(dto)
+                )
+        );
+    }
+    @GetMapping("/bestSolutions/{sessionId}")
+    public List<SolutionScoreDTO> getBestSolutions(@PathVariable Long sessionId) {
+        return solutionService.getBestSolutions(sessionId);
+    }
+
+    @GetMapping("/view/session/{sessionId}")
+    public List<SolutionDetailsDTO> getSolutionsDetailsBySessionId(@PathVariable Long sessionId) {
+        return solutionService.getSolutionsByParentSessionIdOrSessionId(sessionId)
+                .stream()
+                .map(SolutionMapper::toDetailsDTO)
+                .toList();
+    }
+}
+
