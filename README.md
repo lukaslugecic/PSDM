@@ -14,8 +14,8 @@ The system supports several **problem-solving** and **decision-making** methods,
 - **Communication:** REST over HTTP using JSON
 
 ## 🔗 Repositories
-- 📱 [PSDMClientApp](https://github.com/lukaslugecic/PSDMClientApp)
-- 🌐 [PSDMWebApi](https://github.com/lukaslugecic/PSDMWebApi)
+- 📱 [PSDMClientApp](https://github.com/lukaslugecic/PSDM/tree/master/PSDMClientApp)
+- 🌐 [PSDMWebApi](https://github.com/lukaslugecic/PSDM/tree/master/PSDMWebApi)
 
 ## ⚙️ Key Features
 - User registration and login through Keycloak  
